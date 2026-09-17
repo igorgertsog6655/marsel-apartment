@@ -128,12 +128,25 @@ export function addInterior({model,walls,furniture,floors,openings,data,m,box,cy
     }
     if(f.kind==='hob'){setMaterial(g.children.find(o=>o.name===f.name),m.cabinet);for(const o of g.children)if(o.name==='Конфорка')setMaterial(o,m.dark);framedPanel(g,0,f.h/2,f.d/2+.025,f.w-.09,f.h-.1,m.cabinet);}
     if(f.kind==='sofa'){
-      for(const o of g.children)if(o.isMesh)setMaterial(o,o.name==='Цоколь'?m.oak:m.linen);
-      for(const z of [-.57,0,.57]){const cushion=rounded(g,'Декоративная подушка',.18,.43,.46,-.13,.79,z,m.cloth,.075);cushion.rotation.z=-.17;}
-      // A draped throw follows the front arm and seat; folds are geometry, pattern is ImageGen.
-      const geo=new THREE.PlaneGeometry(.53,1.12,24,40),p=geo.attributes.position;
-      for(let i=0;i<p.count;i++){const u=p.getX(i),t=(p.getY(i)+.56)/1.12;const y=t<.5?.16+t*.78:.55-(t-.5)*.02;const x=t<.5?.49+Math.sin(u*45)*.009:.49-(t-.5)*.85;p.setXYZ(i,x,y,u-.64);}
-      geo.computeVertexNormals();applyPhysicalUV(geo,m.throw);const blanket=new THREE.Mesh(geo,m.throw);blanket.name='Плед с рисунком ёлочкой';blanket.castShadow=true;g.add(blanket);
+      g.clear();
+      const fabric=m.linen.clone();fabric.name='Светло-бежевая ткань дивана как у кресла';
+      const seam=fabric.clone();seam.name='Светло-бежевый кант дивана';seam.color.multiplyScalar(.94);
+      // Two armless modules within the original two-metre sofa footprint.
+      for(const [z,width,backWidth,backZ] of [[.545,.90,.86,.555],[-.455,1.08,.71,-.285]]){
+        rounded(g,'Низкий модуль бежевого дивана',.82,.36,width,0,.22,z,fabric,.10);
+        rounded(g,'Верхний кант модуля',.79,.018,width-.03,0,.390,z,seam,.008);
+        rounded(g,'Мягкая поверхность сиденья',.785,.04,width-.035,0,.405,z,fabric,.019);
+        rounded(g,'Отдельная спинка модуля',.225,.40,backWidth,-.295,.60,backZ,fabric,.055);
+        rounded(g,'Кант верхнего края спинки',.205,.012,backWidth-.02,-.295,.772,backZ,seam,.005);
+        rounded(g,'Верх спинки',.202,.035,backWidth-.025,-.295,.789,backZ,fabric,.016);
+      }
+      g.userData.referenceSofa='two armless modules, beige';
+      const sofaBounds=new THREE.Box3().setFromObject(g),wallStart=3.008010,wallEnd=5.278036;
+      const sofaScale=(wallEnd-wallStart)/(sofaBounds.max.z-sofaBounds.min.z);
+      g.scale.setScalar(sofaScale);
+      g.position.z=(wallStart+wallEnd)/2;
+      g.position.x=5.767096+.045+.41*sofaScale;
+      g.userData.widthMetres=wallEnd-wallStart;g.userData.proportionalScale=sofaScale;
     }
     if(['table','roundtable'].includes(f.kind)){
       g.clear();const top=cylinder(g,'Столешница из светлого камня',f.w/2,.05,0,f.h,0,m.stone);top.scale.z=f.d/f.w;applyPhysicalUV(top.geometry,m.stone);
@@ -141,8 +154,38 @@ export function addInterior({model,walls,furniture,floors,openings,data,m,box,cy
       for(let j=0;j<48;j++){const a=j/48*Math.PI*2;const rib=cylinder(g,'Дубовая рейка основания',.011,f.h-.06,Math.cos(a)*radius*(f.kind==='table'?1.8:1),(f.h-.06)/2,Math.sin(a)*radius,m.oak,8);applyPhysicalUV(rib.geometry,m.oak);}
     }
     if(f.name==='Обеденный стул'){
-      for(const o of g.children)if(o.isMesh)setMaterial(o,o.name==='Ножка'?m.oak:m.linen);
-      if(f.x<5.5)g.rotation.y=-Math.PI/2;else if(f.x>6.8)g.rotation.y=Math.PI/2;
+      g.clear();
+      const upholstery=new THREE.MeshStandardMaterial({name:'Кремовая обивка стула по референсу',color:'#eee0c4',roughness:.88});
+      const gold=new THREE.MeshStandardMaterial({name:'Золотистые ножки стула',color:'#c8a353',metalness:.88,roughness:.22});
+      const seatOutline=new THREE.Shape();seatOutline.moveTo(-.18,.225);
+      seatOutline.bezierCurveTo(-.25,.225,-.25,.195,-.25,.13);seatOutline.lineTo(-.25,-.045);
+      seatOutline.bezierCurveTo(-.25,-.285,.25,-.285,.25,-.045);seatOutline.lineTo(.25,.13);
+      seatOutline.bezierCurveTo(.25,.195,.25,.225,.18,.225);seatOutline.quadraticCurveTo(0,.255,-.18,.225);
+      const seatGeo=new THREE.ExtrudeGeometry(seatOutline,{depth:.065,bevelEnabled:true,bevelThickness:.015,bevelSize:.015,bevelSegments:5,curveSegments:32,steps:1});
+      const seat=new THREE.Mesh(seatGeo,upholstery);seat.name='Сиденье с закруглённым задним краем по спинке';seat.rotation.x=Math.PI/2;seat.position.y=.5075;seat.castShadow=true;seat.receiveShadow=true;g.add(seat);
+      // A continuous padded horseshoe: tall back flowing down into low arms.
+      const vertices=[],indices=[],uv=[],segments=64,section=20;
+      for(let i=0;i<=segments;i++){
+        const t=i/segments,a=-Math.PI*.12+t*Math.PI*1.24,back=Math.max(0,Math.sin(a));
+        const x=.258*Math.cos(a),z=-.232*Math.sin(a)+.012;
+        const top=.685+.185*Math.pow(back,.65),bottom=.535-.02*back;
+        const endRound=Math.min(1,Math.sqrt(Math.max(0,Math.sin(Math.PI*t)*12)));
+        for(let j=0;j<=section;j++){
+          const q=j/section*Math.PI*2,r=.041*Math.cos(q)*endRound;
+          vertices.push(x+Math.cos(a)*r,(top+bottom)/2+(top-bottom)/2*Math.sin(q)*endRound,z-Math.sin(a)*r);
+          uv.push(t,j/section);
+          if(i<segments&&j<section){const k=i*(section+1)+j;indices.push(k,k+section+1,k+1,k+1,k+section+1,k+section+2);}
+        }
+      }
+      const shellGeo=new THREE.BufferGeometry();shellGeo.setAttribute('position',new THREE.Float32BufferAttribute(vertices,3));shellGeo.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));shellGeo.setIndex(indices);shellGeo.computeVertexNormals();
+      const shell=new THREE.Mesh(shellGeo,upholstery);shell.name='Плавная спинка с подлокотниками';shell.castShadow=true;shell.receiveShadow=true;g.add(shell);
+      for(const x of [-1,1])for(const z of [-1,1]){
+        const foot=new THREE.Vector3(x*.245,.012,z*.218),top=new THREE.Vector3(x*.196,.445,z*.17),delta=top.clone().sub(foot);
+        const leg=new THREE.Mesh(new THREE.CylinderGeometry(.013,.007,delta.length(),16),gold);leg.name='Золотистая коническая ножка';leg.position.copy(foot).add(top).multiplyScalar(.5);leg.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),delta.normalize());leg.castShadow=true;g.add(leg);
+        cylinder(g,'Тёмный наконечник ножки',.008,.009,foot.x,.006,foot.z,m.dark);
+      }
+      g.userData.referenceChair=true;
+      g.rotation.y=f.x<5.5?Math.PI/2:f.x>6.8?-Math.PI/2:Math.PI;
     }
   }
   // Cornices and skirting follow real wall segments, never across openings.

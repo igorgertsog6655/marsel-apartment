@@ -114,8 +114,8 @@ async function start(){
    fill.intensity=night?0:neutral?.72:.35*skyFactor;scene.environmentIntensity=night?.015:neutral?.20:.015+.245*skyFactor;
    scene.background.set(night?'#030711':currentView==='overview'||currentView==='top'?'#eceae3':'#d5e6ee');
    if(!night&&skyFactor<1)scene.background.lerp(new THREE.Color('#101b31'),1-skyFactor);
-   lamps.visible=night||ceiling.visible;lamps.traverse(o=>{if(o.userData.pathGuide)o.visible=pathOn;});
-   lamps.traverse(o=>{if(o.name==='LED душевой спот')o.visible=mainOn;});
+   lamps.visible=mode==='daylight'||night||ceiling.visible;lamps.traverse(o=>{if(o.userData.pathGuide)o.visible=mode==='daylight'||pathOn;});
+   lamps.traverse(o=>{if(o.name==='LED душевой спот')o.visible=mode==='daylight'||mainOn;});
    const mainPower=Number(mainLightPowerControl.value)/100;mainLightPowerValue.textContent=mainLightPowerControl.value+'%';
    lightSources.forEach((l,i)=>{const isPath=Boolean(l.userData.pathGuide),isMain=!isPath&&/^(?:Свет (?:прихожей|детской|ванной|гардеробной)|Потолочный свет|Подвес над столом|Люстра|Спот|Душевая основной)/.test(l.name),layer=isPath?'path':isMain?'main':'soft';l.userData.lightingLayer=layer;l.color.set(layer==='main'?'#eef5ff':'#ffd4a3');const enabled=layer==='path'?pathOn:layer==='main'?mainOn:softOn;l.intensity=enabled?intensities[i]*(layer==='main'?mainPower:1):0;});
    renderer.toneMappingExposure=night?1:.82;
