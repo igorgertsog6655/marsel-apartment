@@ -1,0 +1,139 @@
+import {solarPosition,DAYLIGHT_TIMES,DAYLIGHT_MONTHS,SOLAR_SITE,NORTH} from './solar.js';
+import {createExterior} from './exterior.js';
+import generatedViews from './generated-views.json';
+import {Reflector} from 'three/examples/jsm/objects/Reflector.js';
+import * as THREE from 'three';
+import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls.js';
+import {GLTFExporter} from 'three/examples/jsm/exporters/GLTFExporter.js';
+import {RoomEnvironment} from 'three/examples/jsm/environments/RoomEnvironment.js';
+import {createModel,data} from './scene.js';
+import {loadTextures} from './load-textures.js';
+import './style.css';
+import './interior.css';
+
+const views={hallNightToMirror:{name:'Коридор · к зеркалу прихожей',camera:[10.65,1.55,.75],target:[10.55,1.10,-3.35]},hallNightToLiving:{name:'Коридор · от зеркала к гостиной',camera:[10.45,1.55,-3.14],target:[10.02,1.20,1.25]},shower:{name:'Душевая · от двери',camera:[9.69,1.50,-.951],target:[8.05,1.12,-.87]},childMirror:{name:'Детская · от тренажёра к зеркалу',camera:[.63,1.55,.85],target:[.70,1.30,2.975]},dressing:{name:'Гардеробная · от двери',camera:[9.65,1.60,-2.38],target:[7.76,1.10,-2.56]},bathroomSink:{name:'Ванная · из двери к раковине',camera:[11.48,1.55,-.77],target:[12.99,1.00,-.53]},bathroomDoor:{name:'Ванная · от раковины к двери',camera:[12.49,1.58,-.63],target:[10.99,1.22,-.87]},childWindow:{name:'Детская · к окну',camera:[3.70,1.58,1.52],target:[.05,1.30,1.45]},childReverse:{name:'Детская · от окна',camera:[.20,1.58,1.46],target:[3.80,1.30,1.50]},hall:{name:'Прихожая',camera:[12.55,1.65,-2.70],target:[10.70,1.35,-3.35]},bedroom:{name:'Спальня · к изголовью',camera:[2.36,1.65,6.05],target:[2.45,1.20,3.23]},bedroomWardrobe:{name:'Спальня · шкаф и окна',camera:[.85,1.62,3.80],target:[4.85,1.3,4.65]},mirror:{name:'Зеркало у стеллажа',camera:[6.6,1.55,2.5],target:[9.435,1.4,2.16]},living:{name:'Кухня → гостиная',camera:[6.75,1.64,1.12],target:[7.8,1.2,4.8]},reverse:{name:'От окна к кухне',camera:[7.72,1.62,5.08],target:[6.7,1.28,.58]},tv:{name:'Из гостиной',camera:[9.10,1.64,4.7],target:[6.1,1.24,1.1]},kitchen:{name:'Кухня крупным планом',camera:[8.86,1.77,2.6],target:[6.52,1.25,.08]}};
+document.querySelector('#root').innerHTML=`<aside><div class="eyebrow">МАРСЕЛЬ / ИНТЕРЬЕР</div><h1>Тёплая<br>неоклассика</h1><p class="intro">Кухня-гостиная, спальня, детская и прихожая.<br>Материалы по вашим референсам.</p><div class="measure"><strong>2 823 <small>мм</small></strong><span>высота по обмеру · текстуры ImageGen</span></div><div class="modes"><button id="overview" class="active">Вся квартира</button><button id="top">Сверху</button></div><label for="view">Ракурс интерьера</label><select id="view"><option value="">Выберите ракурс</option>${Object.entries(views).map(([id,v])=>`<option value="${id}">${v.name}</option>`).join('')}</select><label>Высота среза стен <output id="heightLabel">1,15 м</output><input id="cut" type="range" min="0.15" max="2.823" step="0.01" value="1.15"></label><label class="check"><input id="furn" type="checkbox" checked>Мебель и текстиль</label><label class="check"><input id="labels" type="checkbox" checked>Названия помещений</label><section class="daylight-controls"><label for="daylightMonth">Дневной свет · месяц</label><select id="daylightMonth">${DAYLIGHT_MONTHS.map(m=>`<option value="${m.month}" ${m.month===6?'selected':''}>${m.name} · 15-е</option>`).join('')}</select><label for="daylightTime">Время</label><select id="daylightTime">${DAYLIGHT_TIMES.map(t=>`<option value="${t}" ${t==='14:00'?'selected':''}>${t}</option>`).join('')}</select><p class="daylight-site" id="daylightSite">Новосибирск · 15 июня · UTC+7</p><output id="sunDetails" aria-live="polite"></output><small>Север — по вашей схеме. Ясный день; окружающая застройка условная.</small></section><label class="check"><input id="night" type="checkbox">Ночной режим</label><label class="check"><input id="pathLight" type="checkbox" checked>Ночная подсветка коридора</label><label class="check"><input id="pathOnly" type="checkbox">Только низкие светильники</label><label class="check"><input id="neutral" type="checkbox">Нейтральный свет для проверки</label><label for="showerLight">Свет душевой</label><select id="showerLight"><option value="full">Основной и подсветка</option><option value="soft">Мягкая подсветка</option></select><div class="mirror-controls"><b>Зеркала</b><label class="check"><input id="mirror-shower" type="checkbox" checked>Над раковиной душевой</label><label class="check"><input id="mirror-child" type="checkbox" checked>В детской у окна</label><label class="check"><input id="mirror-corner" type="checkbox" checked>У окна гостиной</label><label class="check"><input id="mirror-bathroom" type="checkbox" checked>Над раковиной ванной</label><label class="check"><input id="mirror-kitchen" type="checkbox" checked>Справа от кухни</label><label class="check"><input id="mirror-living" type="checkbox" checked>В гостиной</label><label class="check"><input id="mirror-hall" type="checkbox" checked>В прихожей</label><label class="check"><input id="mirror-bedroom" type="checkbox" checked>В спальне</label></div><button id="capture" class="wide">Сохранить этот ракурс · PNG</button><button id="gallery" class="wide">Визуализации квартиры ↗</button><button id="source" class="wide">Исходный план ↗</button><button id="download" class="wide accent">Скачать модель с текстурами · GLB</button><div class="notes"><b>Материалы и детали</b><p>Дубовая ёлочка, светлый камень, матовые фасады greige, лен, шерстяной ковёр и латунь. Камин и перегородка убраны.</p><details><summary>Размеры и допущения</summary><p>Контур — по обмеру и варианту 5. Балконные двери прозрачные, открываются внутрь; верх 2 468 мм. Глубина балконов около 0,61 м и ограждения 1,10 м — приблизительно. Отделка адаптирована к существующему объёму по двум сгенерированным референсам. В детской и большом окне спальни сохранены подоконники. Остальные южные окна — до пола. Вид с 6-го этажа: из детской — двор без реки; с южной стороны — река примерно в 50 м и лес за ней. Высота этажа, ширина реки и устройство двора условные. Виды ImageGen созданы по текущей модели; геометрия проверяется в 3D.</p></details></div><div id="status" role="status">Подготовка материалов…</div></aside><main><div class="topline"><span id="viewTitle">ОБМЕР / МАТЕРИАЛЫ / СВЕТ</span><span>МАРСЕЛЬ</span></div><div id="viewport"></div><div class="north-compass" title="Север закреплён по вашему общему виду"><span id="northArrow">↑</span><b>Север</b></div><div id="roomlabels"></div><div class="hint">Левая кнопка — вращение · Правая — перемещение · Колесо — масштаб</div></main><dialog id="plan"><header><b>Вариант 5 · исходный чертёж</b><button id="close">Закрыть ×</button></header><img src="plan.png" alt="Исходный план варианта 5"><p>В текущей версии убраны камин и перегородка между кухней и гостиной, добавлены балконы и отделка.</p></dialog><dialog id="references"><header><b>Визуализации текущей планировки</b><button id="closeGallery">Закрыть ×</button></header><p>Комнаты квартиры после изменений. Художественные виды ImageGen созданы по ракурсам этой 3D-модели; точные размеры и расположение предметов проверяйте в интерактивном просмотре.</p><div class="gallery" id="generatedGallery"></div></dialog>`;
+const status=document.querySelector('#status'),mount=document.querySelector('#viewport');
+async function start(){
+ const textures=await loadTextures(),scene=new THREE.Scene();scene.background=new THREE.Color('#eceae3');
+ const renderer=new THREE.WebGLRenderer({antialias:true,preserveDrawingBuffer:true});renderer.setPixelRatio(Math.min(devicePixelRatio,1.6));renderer.setSize(mount.clientWidth,mount.clientHeight);renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=.82;mount.appendChild(renderer.domElement);
+ const env=new THREE.PMREMGenerator(renderer);scene.environment=env.fromScene(new RoomEnvironment(),.04).texture;scene.environmentIntensity=.26;
+ const {model,walls,furniture,decor,ceiling,lamps,lightSources,wallMirror,hallMirror}=createModel(textures);scene.add(model);
+ const liveReflection=new Reflector(wallMirror.geometry.clone(),{color:0xe8ebea,textureWidth:1024,textureHeight:2048,clipBias:.003});liveReflection.name='Живое отражение';liveReflection.position.copy(wallMirror.position);liveReflection.position.x-=.002;liveReflection.rotation.copy(wallMirror.rotation);scene.add(liveReflection);
+ const hallReflection=new Reflector(hallMirror.geometry.clone(),{color:0xe8ebea,textureWidth:1024,textureHeight:2048,clipBias:.003});hallReflection.position.copy(hallMirror.position);hallReflection.position.z+=.002;scene.add(hallReflection);
+ const exerciseMirror=model.getObjectByName('Зеркало спальни за тренажёром');const exerciseReflection=new Reflector(exerciseMirror.geometry.clone(),{color:0xe8ebea,textureWidth:1024,textureHeight:2048,clipBias:.003});exerciseReflection.position.copy(exerciseMirror.position);exerciseReflection.position.x-=.002;exerciseReflection.rotation.copy(exerciseMirror.rotation);scene.add(exerciseReflection);
+ const kitchenMirror=model.getObjectByName('Зеркало справа от кухонного пенала');const kitchenReflection=new Reflector(kitchenMirror.geometry.clone(),{color:0xe8ebea,textureWidth:512,textureHeight:2048,clipBias:.003});kitchenReflection.position.copy(kitchenMirror.position);kitchenReflection.position.z+=.002;scene.add(kitchenReflection);
+ const bathroomMirror=model.getObjectByName('Зеркало над раковиной ванной');const bathroomReflection=new Reflector(bathroomMirror.geometry.clone(),{color:0xe8ebea,textureWidth:1024,textureHeight:1024,clipBias:.003});bathroomReflection.position.copy(bathroomMirror.position);bathroomReflection.position.x-=.002;bathroomReflection.rotation.copy(bathroomMirror.rotation);scene.add(bathroomReflection);
+ const cornerMirror=model.getObjectByName('Зеркальная полоса у окна гостиной');const cornerReflection=new Reflector(cornerMirror.geometry.clone(),{color:0xe8ebea,textureWidth:256,textureHeight:2048,clipBias:.003});cornerReflection.position.copy(cornerMirror.position);cornerReflection.position.x-=.002;cornerReflection.rotation.copy(cornerMirror.rotation);scene.add(cornerReflection);
+ const camera=new THREE.PerspectiveCamera(45,mount.clientWidth/mount.clientHeight,.035,150),controls=new OrbitControls(camera,renderer.domElement);controls.enableDamping=true;controls.minDistance=.25;controls.maxDistance=50;controls.maxPolarAngle=Math.PI*.49;
+ const hemi=new THREE.HemisphereLight('#fff8ee','#b8a78d',1);scene.add(hemi);
+ const sun=new THREE.DirectionalLight('#fff1d6',2.15);sun.target.position.set(6.3,1.2,.6);sun.castShadow=true;sun.shadow.mapSize.set(4096,4096);Object.assign(sun.shadow.camera,{left:-15,right:15,top:15,bottom:-15,near:1,far:85});sun.shadow.normalBias=.006;sun.shadow.bias=-.00004;sun.shadow.radius=1.5;scene.add(sun,sun.target);
+ const fill=new THREE.DirectionalLight('#f2f7ff',.7);fill.position.set(10,5,-3);scene.add(fill);
+ const exterior=createExterior();scene.add(exterior);
+ const ground=new THREE.Mesh(new THREE.PlaneGeometry(200,200),new THREE.MeshStandardMaterial({color:'#e5e3da',roughness:1}));ground.rotation.x=-Math.PI/2;ground.position.y=-.21;ground.receiveShadow=true;scene.add(ground);
+ const clip=new THREE.Plane(new THREE.Vector3(0,-1,0),1.15);renderer.localClippingEnabled=true;
+ for(const group of [walls,decor])group.traverse(o=>{if(o.isMesh){o.material=o.material.clone();o.material.clippingPlanes=[clip];o.material.clipShadows=true;o.material.side=THREE.DoubleSide;}});
+ // Full architecture casts shadows even when its visible display is cut away.
+ const solarArchitecture=new THREE.Group();solarArchitecture.name='Полный контур для солнечных теней';scene.add(solarArchitecture);
+ const shadowOnlyMaterial=new THREE.MeshBasicMaterial({colorWrite:false,depthWrite:false,side:THREE.DoubleSide});
+ const shadowDepth=new THREE.MeshDepthMaterial({depthPacking:THREE.RGBADepthPacking,side:THREE.DoubleSide});
+ model.updateMatrixWorld(true);
+ for(const group of [walls,ceiling])group.traverse(o=>{if(!o.isMesh)return;const proxy=new THREE.Mesh(o.geometry,shadowOnlyMaterial);proxy.name='Тень · '+o.name;proxy.matrix.copy(o.matrixWorld);proxy.matrixAutoUpdate=false;proxy.castShadow=true;proxy.customDepthMaterial=shadowDepth;solarArchitecture.add(proxy);o.castShadow=false;});
+ model.traverse(o=>{if(o.isMesh){const materials=Array.isArray(o.material)?o.material:[o.material];if(materials.some(m=>m?.transparent&&m.opacity<.75))o.castShadow=false;}});
+ const caps=new THREE.Group();scene.add(caps);for(const w of data.walls){const s=new THREE.Shape(w.points.map(([x,z])=>new THREE.Vector2(x,-z))),geo=new THREE.ShapeGeometry(s);geo.rotateX(-Math.PI/2);const c=new THREE.Mesh(geo,new THREE.MeshStandardMaterial({color:'#b9b4a7',side:THREE.DoubleSide}));c.position.y=1.15;caps.add(c);}
+ const childMirror=model.getObjectByName('Зеркало детской между столом и окном');const childReflection=new Reflector(childMirror.geometry.clone(),{color:0xe8ebea,textureWidth:512,textureHeight:2048,clipBias:.003});childReflection.position.copy(childMirror.position);childReflection.position.z-=.002;childReflection.rotation.copy(childMirror.rotation);scene.add(childReflection);
+ const showerMirror=model.getObjectByName('Зеркало над раковиной душевой');const showerReflection=new Reflector(showerMirror.geometry.clone(),{color:0xe8ebea,textureWidth:512,textureHeight:1024,clipBias:.003});showerReflection.position.copy(showerMirror.position);showerReflection.position.z-=.002;showerReflection.rotation.copy(showerMirror.rotation);scene.add(showerReflection);
+ const mirrorOptions=[['mirror-shower',showerMirror,showerReflection],['mirror-child',childMirror,childReflection],['mirror-corner',cornerMirror,cornerReflection],['mirror-bathroom',bathroomMirror,bathroomReflection],['mirror-kitchen',kitchenMirror,kitchenReflection],['mirror-living',wallMirror,liveReflection],['mirror-hall',hallMirror,hallReflection],['mirror-bedroom',exerciseMirror,exerciseReflection]];
+ function applyMirrorOptions(){
+   const full=ceiling.visible&&!caps.visible;
+   for(const [id,surface,reflection] of mirrorOptions){const enabled=document.getElementById(id).checked;surface.visible=enabled&&!full;reflection.visible=enabled&&full;} decor.traverse(o=>{if(o.name==='Латунная кромка зеркала')o.visible=document.getElementById('mirror-hall').checked;});
+ }
+ for(const [id] of mirrorOptions)document.getElementById(id).onchange=applyMirrorOptions;
+ let currentView='overview';
+ function height(h){clip.constant=h;caps.children.forEach(o=>o.position.y=h);document.querySelector('#cut').value=String(Math.min(h,2.823));document.querySelector('#heightLabel').textContent=h.toFixed(2).replace('.',',')+' м';}
+ function resetMotion(){controls.enableDamping=false;controls.update();camera.up.set(0,1,0);controls.enableRotate=true;}
+ function overview(){resetMotion();currentView='overview';exterior.visible=false;ground.position.y=-.21;scene.background.set('#eceae3');exerciseReflection.visible=false;exerciseMirror.visible=true;hallReflection.visible=false;hallMirror.visible=true;liveReflection.visible=false;wallMirror.visible=true;caps.visible=true;camera.fov=45;camera.updateProjectionMatrix();camera.position.set(21,19,25);controls.target.set(6,.25,.6);controls.update();controls.enableDamping=true;ceiling.visible=false;lamps.visible=false;height(1.15);document.querySelector('#view').value='';document.querySelector('#overview').classList.add('active');document.querySelector('#top').classList.remove('active');document.querySelector('#viewTitle').textContent='КВАРТИРА · ОБЩИЙ ВИД';document.querySelector('#roomlabels').style.display=document.querySelector('#labels').checked?'':'none';}
+ document.querySelector('#overview').onclick=overview;
+ document.querySelector('#top').onclick=()=>{resetMotion();currentView='top';exterior.visible=false;ground.position.y=-.21;scene.background.set('#eceae3');exerciseReflection.visible=false;exerciseMirror.visible=true;hallReflection.visible=false;hallMirror.visible=true;liveReflection.visible=false;wallMirror.visible=true;caps.visible=true;camera.fov=40;camera.updateProjectionMatrix();const h=Math.max(12.3,15.2/camera.aspect)/(2*Math.tan(THREE.MathUtils.degToRad(20)))*1.12;controls.maxDistance=Math.max(50,h+3);camera.position.set(6.3,h,1.35001);controls.target.set(6.3,0,1.35);controls.enableRotate=false;controls.update();ceiling.visible=false;lamps.visible=false;height(.35);document.querySelector('#view').value='';document.querySelector('#top').classList.add('active');document.querySelector('#overview').classList.remove('active');document.querySelector('#viewTitle').textContent='ПЛАН · ПРОВЕРКА ГЕОМЕТРИИ';document.querySelector('#roomlabels').style.display=document.querySelector('#labels').checked?'':'none';};
+ function interiorView(id){const v=views[id];if(!v)return;resetMotion();currentView=id;exterior.visible=true;ground.position.y=-17.2;scene.background.set('#d5e6ee');exerciseReflection.visible=id.startsWith('bedroom');exerciseMirror.visible=!id.startsWith('bedroom');hallReflection.visible=id==='hall';hallMirror.visible=id!=='hall';liveReflection.visible=id!=='hall'&&!id.startsWith('bedroom');wallMirror.visible=false;camera.fov=68;camera.updateProjectionMatrix();camera.position.set(...v.camera);controls.target.set(...v.target);controls.update();ceiling.visible=true;lamps.visible=true;height(3);caps.visible=false;document.querySelector('#heightLabel').textContent='Полные стены';document.querySelector('#viewTitle').textContent=v.name;document.querySelector('#overview').classList.remove('active');document.querySelector('#top').classList.remove('active');document.querySelector('#roomlabels').style.display='none';}
+ document.querySelector('#view').onchange=e=>interiorView(e.target.value);document.querySelector('#cut').oninput=e=>{exerciseReflection.visible=false;exerciseMirror.visible=true;hallReflection.visible=false;hallMirror.visible=true;liveReflection.visible=false;wallMirror.visible=true;caps.visible=true;height(Number(e.target.value));ceiling.visible=false;};document.querySelector('#furn').onchange=e=>furniture.visible=e.target.checked;
+ const labelNodes=[];for(const f of data.floors){const node=document.createElement('div');node.className='room';node.innerHTML=`${(f.name==='Кладовая / сейф'?'Гардеробная':f.name)==='Кабинет'?'Детская':(f.name==='Кладовая / сейф'?'Гардеробная':f.name)}${f.area?`<small>${String(f.area).replace('.',',')} м²</small>`:''}`;document.querySelector('#roomlabels').appendChild(node);const xs=f.points.map(p=>p[0]),zs=f.points.map(p=>p[1]);let x=(Math.min(...xs)+Math.max(...xs))/2,z=(Math.min(...zs)+Math.max(...zs))/2;if((f.name==='Кладовая / сейф'?'Гардеробная':f.name)==='Прихожая'){x=11.1;z=-3.0;}labelNodes.push({node,pos:new THREE.Vector3(x,.12,z)});}
+ document.querySelector('#labels').onchange=e=>document.querySelector('#roomlabels').style.display=e.target.checked?'':'none';
+ const emissiveDefaults=new Map();model.traverse(o=>{for(const mat of (Array.isArray(o.material)?o.material:[o.material]))if(mat?.emissive&&!emissiveDefaults.has(mat))emissiveDefaults.set(mat,mat.emissiveIntensity);});
+ const intensities=lightSources.map(l=>l.intensity);
+ const nightControl=document.querySelector('#night'),neutralControl=document.querySelector('#neutral');
+ const daylightControl=document.querySelector('#daylightTime'),monthControl=document.querySelector('#daylightMonth'),sunDetails=document.querySelector('#sunDetails');
+ try{const saved=Number(localStorage.getItem('marsel-daylight-month'));if(DAYLIGHT_MONTHS.some(m=>m.month===saved))monthControl.value=String(saved);}catch{}
+ const getSolar=()=>solarPosition(daylightControl.value,{...SOLAR_SITE,month:Number(monthControl.value)});
+ try{const saved=localStorage.getItem('marsel-daylight-time');if(DAYLIGHT_TIMES.includes(saved))daylightControl.value=saved;}catch{}
+ let solar=getSolar(),lastSunLabel='';
+ function updateDaylight(){
+   solar=getSolar();
+   sun.position.copy(sun.target.position).addScaledVector(new THREE.Vector3(solar.direction.x,solar.direction.y,solar.direction.z),35);
+   sun.shadow.needsUpdate=true;
+   document.querySelector('#daylightSite').textContent=`Новосибирск · ${DAYLIGHT_MONTHS.find(m=>m.month===solar.month).dateLabel} · UTC+7`;
+ }
+ const changeDaylight=()=>{nightControl.checked=false;neutralControl.checked=false;document.querySelector('#pathOnly').checked=false;updateDaylight();try{localStorage.setItem('marsel-daylight-time',daylightControl.value);localStorage.setItem('marsel-daylight-month',monthControl.value);}catch{}applyLighting();};
+ daylightControl.onchange=changeDaylight;monthControl.onchange=changeDaylight;
+ updateDaylight();
+ const northArrow=document.querySelector('#northArrow'),northDirection=new THREE.Vector3(NORTH.x,0,NORTH.z);
+ function updateNorth(){const projected=northDirection.clone().transformDirection(camera.matrixWorldInverse);northArrow.style.transform=`rotate(${Math.atan2(projected.x,projected.y)}rad)`;}
+ // Read-only scene state for reproducible verification of the astronomical controls.
+ window.marselDaylightState=()=>({time:solar.time,month:solar.month,day:solar.day,azimuth:solar.azimuth,elevation:solar.elevation,north:{...NORTH},sunPosition:sun.position.toArray(),sunTarget:sun.target.position.toArray(),sunIntensity:sun.intensity,shadowSize:sun.shadow.mapSize.toArray(),architectureCasters:solarArchitecture.children.length,night:nightControl.checked});
+ function applyLighting(){
+   const night=nightControl.checked,neutral=neutralControl.checked&&!night,onlyPath=night&&document.querySelector('#pathOnly').checked; emissiveDefaults.forEach((power,mat)=>{mat.emissiveIntensity=onlyPath&&mat.name!=='Ночная подсветка прохода 2700К'?0:power;});
+   const skyFactor=THREE.MathUtils.clamp((solar.elevation+6)/16,0,1);
+   hemi.color.set(night||solar.elevation<0?'#8b9fc8':neutral?'#ffffff':'#fff8ee');
+   hemi.groundColor.set(night?'#101525':neutral?'#bdbdbd':'#b8a78d');
+   hemi.intensity=night?.035:(neutral?1.35:1)*(.04+.96*skyFactor);
+   const daylight=Math.max(0,Math.sin(solar.elevation*Math.PI/180));
+   sun.color.set(neutral?'#ffffff':solar.elevation<25?'#ffd49e':'#fff1da');sun.intensity=night?0:(neutral?1.2:2.5)*Math.pow(daylight,.3);
+   const directions=['север','север-северо-восток','северо-восток','восток-северо-восток','восток','восток-юго-восток','юго-восток','юг-юго-восток','юг','юг-юго-запад','юго-запад','запад-юго-запад','запад','запад-северо-запад','северо-запад','север-северо-запад'];
+   const label=night?'Ночной режим · солнце выключено':solar.elevation<=0?'Солнце за горизонтом · сумерки':`Солнце: ${directions[Math.round(solar.azimuth/22.5)%16]} · ${Math.round(solar.elevation)}° над горизонтом`;
+   if(label!==lastSunLabel){sunDetails.textContent=label;lastSunLabel=label;}
+   fill.intensity=night?0:.35*skyFactor;scene.environmentIntensity=night?.015:.015+.245*skyFactor;
+   scene.background.set(night?'#030711':currentView==='overview'||currentView==='top'?'#eceae3':'#d5e6ee');
+   if(!night&&skyFactor<1)scene.background.lerp(new THREE.Color('#101b31'),1-skyFactor);
+   lamps.visible=night||ceiling.visible; const pathOn=night&&document.querySelector('#pathLight').checked; lamps.traverse(o=>{if(o.userData.pathGuide)o.visible=pathOn;});
+   lamps.traverse(o=>{if(o.name==='LED душевой спот')o.visible=document.querySelector('#showerLight').value!=='soft';});
+   lightSources.forEach((l,i)=>{l.intensity=neutral||(onlyPath&&!l.userData.pathGuide)?0:intensities[i]*(l.name==='Душевая основной'&&document.querySelector('#showerLight').value==='soft'?0:1);});
+   renderer.toneMappingExposure=night?1:.82;
+ }
+ document.querySelector('#pathOnly').onchange=()=>{if(document.querySelector('#pathOnly').checked){nightControl.checked=true;document.querySelector('#pathLight').checked=true;neutralControl.checked=false;}applyLighting();};
+ nightControl.onchange=()=>{if(nightControl.checked)neutralControl.checked=false;applyLighting();};
+ neutralControl.onchange=()=>{if(neutralControl.checked)nightControl.checked=false;applyLighting();};
+ const source=document.querySelector('#plan'),gallery=document.querySelector('#references');document.querySelector('#source').onclick=()=>source.showModal();document.querySelector('#close').onclick=()=>source.close();document.querySelector('#gallery').onclick=()=>gallery.showModal();document.querySelector('#closeGallery').onclick=()=>gallery.close();
+ document.querySelector('#generatedGallery').innerHTML=generatedViews.map(i=>`<figure><img src="${i.file}" alt="${i.name}"><figcaption>${i.name} · ImageGen. ${i.stage}</figcaption></figure>`).join('');
+ document.querySelector('#capture').onclick=async()=>{const oldSize=renderer.getSize(new THREE.Vector2()),oldRatio=renderer.getPixelRatio(),oldAspect=camera.aspect;renderer.setPixelRatio(1);renderer.setSize(1600,1000,false);camera.aspect=1.6;camera.updateProjectionMatrix();applyMirrorOptions();applyLighting();renderer.render(scene,camera);const png=renderer.domElement.toDataURL('image/png');renderer.setPixelRatio(oldRatio);renderer.setSize(oldSize.x,oldSize.y,false);camera.aspect=oldAspect;camera.updateProjectionMatrix();const name=currentView+(nightControl.checked?'-night':neutralControl.checked?'-neutral':'-m'+monthControl.value+'-'+daylightControl.value.replace(':',''));if(location.protocol!=='file:')try{const r=await fetch('/capture',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,png})});if(!r.ok)throw new Error('save');status.textContent='Ракурс сохранён: renders/'+name+'.png';return;}catch{}const a=document.createElement('a');a.href=png;a.download=name+'.png';a.click();status.textContent='Ракурс сохранён в PNG';};
+ document.querySelector('#download').onclick=async()=>{const b=document.querySelector('#download');b.disabled=true;b.textContent='Подготовка…';try{const exported=createModel(textures);exported.ceiling.visible=true;const result=await new GLTFExporter().parseAsync(exported.model,{binary:true});const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([result],{type:'model/gltf-binary'}));a.download='Марсель — интерьер ImageGen.glb';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),10000);status.textContent='GLB сохранён: текстуры встроены';}catch(e){status.textContent='Ошибка экспорта: '+e.message;}b.disabled=false;b.textContent='Скачать модель с текстурами · GLB';};
+ window.addEventListener('resize',()=>{camera.aspect=mount.clientWidth/mount.clientHeight;camera.updateProjectionMatrix();renderer.setSize(mount.clientWidth,mount.clientHeight);});overview();status.textContent='8 материалов ImageGen + картина · 2 балкона';
+ function animate(){requestAnimationFrame(animate);controls.update();updateNorth();applyMirrorOptions();applyLighting();renderer.render(scene,camera);for(const {node,pos} of labelNodes){const p=pos.clone().project(camera);node.style.left=((p.x*.5+.5)*mount.clientWidth)+'px';node.style.top=((-p.y*.5+.5)*mount.clientHeight)+'px';node.style.visibility=p.z>1?'hidden':'visible';}}animate();
+}
+start().catch(e=>{status.textContent='Не удалось открыть модель: '+e.message;console.error(e);});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
