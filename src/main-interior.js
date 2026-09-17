@@ -21,13 +21,13 @@ async function start(){
  const renderer=new THREE.WebGLRenderer({antialias:true,preserveDrawingBuffer:true});renderer.setPixelRatio(Math.min(devicePixelRatio,1.6));renderer.setSize(mount.clientWidth,mount.clientHeight);renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=.82;mount.appendChild(renderer.domElement);
  const env=new THREE.PMREMGenerator(renderer);scene.environment=env.fromScene(new RoomEnvironment(),.04).texture;scene.environmentIntensity=.26;
  const {model,walls,furniture,decor,ceiling,lamps,lightSources,wallMirror,hallMirror}=createModel(textures);scene.add(model);
- const wallColorButtons=[...document.querySelectorAll('[data-wall-color]')],wallMaterials=new Set();
+ const wallColorButtons=[...document.querySelectorAll('[data-wall-color]')],wallMaterials=new Set(),wallMoldingMaterials=new Set();
  walls.traverse(o=>{for(const mat of (Array.isArray(o.material)?o.material:[o.material]))if(mat?.name?.startsWith('wall ·'))wallMaterials.add(mat);});
  let selectedWallColor='beige';
  try{const saved=localStorage.getItem('marsel-wall-color');if(saved&&WALL_COLORS[saved])selectedWallColor=saved;}catch{}
  function applyWallColor(){
    const choice=WALL_COLORS[selectedWallColor]||WALL_COLORS.beige;
-   wallMaterials.forEach(mat=>{mat.color.set(choice.hex);mat.needsUpdate=true;});
+   for(const materials of [wallMaterials,wallMoldingMaterials])materials.forEach(mat=>{mat.color.set(choice.hex);mat.needsUpdate=true;});
    wallColorButtons.forEach(button=>{const active=button.dataset.wallColor===selectedWallColor;button.classList.toggle('active',active);button.setAttribute('aria-pressed',String(active));});
    try{localStorage.setItem('marsel-wall-color',selectedWallColor);}catch{}
  }
@@ -46,7 +46,8 @@ async function start(){
  const ground=new THREE.Mesh(new THREE.PlaneGeometry(200,200),new THREE.MeshStandardMaterial({color:'#e5e3da',roughness:1}));ground.rotation.x=-Math.PI/2;ground.position.y=-.21;ground.receiveShadow=true;scene.add(ground);
  const clip=new THREE.Plane(new THREE.Vector3(0,-1,0),1.15);renderer.localClippingEnabled=true;
  for(const group of [walls,decor])group.traverse(o=>{if(o.isMesh){o.material=(Array.isArray(o.material)?o.material:[o.material]).map(mat=>{const clone=mat.clone();clone.clippingPlanes=[clip];clone.clipShadows=true;clone.side=THREE.DoubleSide;return clone;});if(o.material.length===1)o.material=o.material[0];}});
- wallMaterials.clear();walls.traverse(o=>{for(const mat of (Array.isArray(o.material)?o.material:[o.material]))if(mat?.name?.startsWith('wall ·'))wallMaterials.add(mat);});applyWallColor();
+ wallMaterials.clear();walls.traverse(o=>{for(const mat of (Array.isArray(o.material)?o.material:[o.material]))if(mat?.name?.startsWith('wall ·'))wallMaterials.add(mat);});
+ wallMoldingMaterials.clear();decor.traverse(o=>{if(o.isMesh&&['Молдинг','Кромка молдинга'].includes(o.name))for(const mat of (Array.isArray(o.material)?o.material:[o.material]))if(mat?.name?.startsWith('white ·'))wallMoldingMaterials.add(mat);});applyWallColor();
  // Full architecture casts shadows even when its visible display is cut away.
  const solarArchitecture=new THREE.Group();solarArchitecture.name='Полный контур для солнечных теней';scene.add(solarArchitecture);
  const shadowOnlyMaterial=new THREE.MeshBasicMaterial({colorWrite:false,depthWrite:false,side:THREE.DoubleSide});
@@ -93,7 +94,7 @@ async function start(){
  const northArrow=document.querySelector('#northArrow'),northDirection=new THREE.Vector3(NORTH.x,0,NORTH.z);
  function updateNorth(){const projected=northDirection.clone().transformDirection(camera.matrixWorldInverse);northArrow.style.transform=`rotate(${Math.atan2(projected.x,projected.y)}rad)`;}
  // Read-only scene state for reproducible verification of the astronomical controls.
- window.marselDaylightState=()=>({time:solar.time,month:solar.month,day:solar.day,azimuth:solar.azimuth,elevation:solar.elevation,north:{...NORTH},sunPosition:sun.position.toArray(),sunTarget:sun.target.position.toArray(),sunIntensity:sun.intensity,shadowSize:sun.shadow.mapSize.toArray(),architectureCasters:solarArchitecture.children.length,night:nightControl.checked,wallColor:selectedWallColor,wallHex:WALL_COLORS[selectedWallColor].hex,wallRenderedHex:'#'+[...wallMaterials][0].color.getHexString(),exteriorWallHex:'#'+walls.children.find(o=>Array.isArray(o.material))?.material[1]?.color.getHexString()});
+ window.marselDaylightState=()=>({time:solar.time,month:solar.month,day:solar.day,azimuth:solar.azimuth,elevation:solar.elevation,north:{...NORTH},sunPosition:sun.position.toArray(),sunTarget:sun.target.position.toArray(),sunIntensity:sun.intensity,shadowSize:sun.shadow.mapSize.toArray(),architectureCasters:solarArchitecture.children.length,night:nightControl.checked,wallColor:selectedWallColor,wallHex:WALL_COLORS[selectedWallColor].hex,wallRenderedHex:'#'+[...wallMaterials][0].color.getHexString(),wallMoldingHex:'#'+[...wallMoldingMaterials][0].color.getHexString(),exteriorWallHex:'#'+walls.children.find(o=>Array.isArray(o.material))?.material[1]?.color.getHexString()});
  function applyLighting(){
    const night=nightControl.checked,neutral=neutralControl.checked&&!night,onlyPath=night&&document.querySelector('#pathOnly').checked; emissiveDefaults.forEach((power,mat)=>{mat.emissiveIntensity=onlyPath&&mat.name!=='Ночная подсветка прохода 2700К'?0:power;});
    const skyFactor=THREE.MathUtils.clamp((solar.elevation+6)/16,0,1);
