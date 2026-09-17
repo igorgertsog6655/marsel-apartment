@@ -179,17 +179,20 @@ export function addInterior({model,walls,furniture,floors,openings,data,m,box,cy
   for(const z of [-.136,.136])b(niche,'LED витрины гостиной',.009,2.40,.008,.123,1.32,z,nicheLed);
   // Upper kitchen cabinets and backsplash follow the existing lower cabinet run.
   b(details,'Каменный кухонный фартук',2.63,.65,.027,6.84,1.205,.02,m.stone);
+  const upperRunStart=5.007,upperRunEnd=7.967,upperGap=.01;
+  const upperWidth=(upperRunEnd-upperRunStart-upperGap*4)/5,upperDepth=.40;
   for(let i=0;i<5;i++){
-    const w=.51,x=5.79+i*.52;
-    b(details,'Верхний кухонный шкаф',w,1.02,.34,x,2.075,.18,m.cabinet);
-    b(details,'Рамочный фасад верхнего шкафа',w-.014,.99,.022,x,2.075,.362,m.cabinet);
-    framedPanel(details,x,2.075,.386,w-.10,.88,m.cabinet);b(details,'Латунная ручка шкафа',.065,.012,.028,x+.14,1.67,.403,m.metal);
+    const x=upperRunStart+upperWidth/2+i*(upperWidth+upperGap);
+    const cabinet=b(details,'Верхний кухонный шкаф',upperWidth,1.02,upperDepth,x,2.075,upperDepth/2,m.cabinet);
+    cabinet.userData={depthMetres:upperDepth,alignedOverWorktop:true,noTallUnitOverlap:true};
+    b(details,'Рамочный фасад верхнего шкафа',upperWidth-.014,.99,.022,x,2.075,upperDepth+.012,m.cabinet);
+    framedPanel(details,x,2.075,upperDepth+.036,upperWidth-.10,.88,m.cabinet);b(details,'Латунная ручка шкафа',.065,.012,.028,x+.14,1.67,upperDepth+.053,m.metal);
   }
-  b(details,'Фриз кухонной мебели',4.47,.12,.37,6.31,2.64,.19,m.cabinet);
+  b(details,'Фриз кухонной мебели',upperRunEnd-upperRunStart,.12,upperDepth+.02,(upperRunStart+upperRunEnd)/2,2.64,upperDepth/2,m.cabinet);
   const emissive=new THREE.MeshStandardMaterial({name:'Тёплая подсветка',color:'#fff0cb',emissive:'#ffe1a3',emissiveIntensity:2});
-  b(lamps,'Подсветка под шкафами',2.55,.009,.02,6.83,1.548,.31,emissive);
+  b(lamps,'Подсветка под шкафами',upperRunEnd-upperRunStart-.08,.009,.02,(upperRunStart+upperRunEnd)/2,1.548,upperDepth-.02,emissive);
   function point(name,x,y,z,power=8){const l=new THREE.PointLight('#ffe4bd',power,5,2);l.name=name;l.position.set(x,y,z);lamps.add(l);lightSources.push(l);return l;}
-  for(const x of [5.9,6.8,7.7])point('Свет фартука',x,1.45,.46,2.2);
+  for(const x of [5.30,6.49,7.67])point('Свет фартука',x,1.45,.46,2.2);
   for(const y of [.30,.80,1.36,1.92,2.38])point('Подсветка ниши',9.27,y,3.04,.32);
   // Ceiling follows the kitchen + living floor polygons. It is shown in interior views only.
   for(const f of data.floors.filter(f=>['Кухня-столовая','Гостиная','Прихожая'].includes(f.name)))prism(ceiling,'Потолок · '+f.name,f.points,.045,2.823,m.white);
