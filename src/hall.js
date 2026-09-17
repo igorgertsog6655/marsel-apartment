@@ -10,12 +10,17 @@ export function addHall({furniture,decor,ceiling,lamps,data,m,b,rounded,framedPa
   b(bench,'Корпус банкетки',bw,.32,.42,0,.25,0,m.cabinet);
   for(const x of [-bw/3,0,bw/3]){framedPanel(bench,x,.25,.222,bw/3-.065,.24,m.cabinet);b(bench,'Латунная ручка',.095,.013,.025,x,.34,.24,m.metal);}
   rounded(bench,'Льняное сиденье',bw,.11,.43,0,.465,0,m.cloth,.035);
-  const g=furniture.children.find(g=>g.name==='Шкаф прихожей'),f=g.userData,w=f.w,d=f.d*.2;
-  g.clear();g.rotation.y=Math.PI;g.position.z=f.z+f.d/2-d/2;
-  g.userData={...f,d,originalDepth:f.d,depthReduction:.8,frontDirection:'north, into corridor'};
-  b(g,'Корпус шкафа прихожей',w,2.70,d,0,1.35,0,m.cabinet);
-  for(const x of [-w/4,w/4]){b(g,'Дверь к коридору',w/2-.012,2.60,.018,x,1.35,d/2+.009,m.cabinet);framedPanel(g,x,1.42,d/2+.024,w/2-.09,2.34,m.cabinet);b(g,'Латунная ручка шкафа',.018,.23,.025,x+(x<0?.20:-.20),1.05,d/2+.046,m.metal);}
-  b(g,'Карниз шкафа',w+.025,.08,d+.018,0,2.74,0,m.white);
+  const g=furniture.children.find(g=>g.name==='Шкаф прихожей'),f=g.userData,w=f.w;
+  g.clear();g.name='Настенные крючки для пальто';g.rotation.y=Math.PI;
+  // Flush wall mounts on the former wardrobe's back wall; hooks face the entrance hall.
+  g.position.z=f.z+f.d/2-.018;
+  g.userData={...f,kind:'coatHooks',depth:.09,hookCount:5,frontDirection:'north, into corridor'};
+  for(let i=0;i<5;i++){
+    const x=(i-2)*(w-.24)/4;
+    rounded(g,'Латунное основание крючка',.035,.095,.016,x,1.65,0,m.metal,.008);
+    rounded(g,'Крючок для пальто',.018,.018,.075,x,1.635,.04,m.metal,.006);
+    rounded(g,'Загиб крючка вверх',.018,.048,.018,x,1.651,.075,m.metal,.006);
+  }
   for(const name of ['Вешалка и обувь','Стеллаж прихожей']){
     const s=furniture.children.find(o=>o.name===name),a=s.userData,sw=a.d,sd=a.w*.2;s.clear();s.rotation.y=-Math.PI/2;s.position.x=a.x+a.w/2-sd/2;
     s.userData={...a,depth:sd,depthReduction:.8,frontDirection:'west, into corridor'};
