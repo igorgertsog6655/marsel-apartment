@@ -30,6 +30,7 @@ export function makeMaterialSet(textures){
     m[id]=material;
   }
   m.bedroomArt=new THREE.MeshStandardMaterial({name:'Пейзаж спальни ImageGen',map:textures.bedroomArt||null,roughness:.95});
+  m.livingArt=new THREE.MeshStandardMaterial({name:'Горный пейзаж гостиной ImageGen',map:textures.livingArt||null,roughness:.92});
   m.sheer.transparent=true;m.sheer.opacity=.27;m.sheer.depthWrite=false;m.sheer.side=THREE.DoubleSide;
   m.curtain.side=THREE.DoubleSide;m.throw.side=THREE.DoubleSide;
   m.dark=new THREE.MeshStandardMaterial({name:'Тёмное стекло техники',color:'#151b1c',roughness:.19,metalness:.22});
@@ -163,20 +164,22 @@ export function addInterior({model,walls,furniture,floors,openings,data,m,box,cy
   const cornerMirrorStart=4.995,cornerMirrorEnd=5.278036,cornerMirrorHeight=2.6475;
   const cornerMirror=new THREE.Mesh(new THREE.PlaneGeometry(cornerMirrorEnd-cornerMirrorStart,cornerMirrorHeight),mirrorMaterial);
   cornerMirror.name='Зеркальная полоса у окна гостиной';cornerMirror.rotation.y=-Math.PI/2;cornerMirror.position.set(9.435,cornerMirrorHeight/2,(cornerMirrorStart+cornerMirrorEnd)/2);cornerMirror.userData={type:'cornerMirror',width:cornerMirrorEnd-cornerMirrorStart,height:cornerMirrorHeight};decor.add(cornerMirror);
-  const wallMirror=new THREE.Mesh(new THREE.PlaneGeometry(1.545,2.823),mirrorMaterial);wallMirror.name='Зеркало кухни-гостиной';wallMirror.rotation.y=-Math.PI/2;wallMirror.position.set(9.435,2.823/2,(1.32+2.865)/2);wallMirror.userData={type:'fullHeightMirror',width:1.545,height:2.823,plantUnchanged:true};decor.add(wallMirror);
-  // A restrained tall display shelf near the TV uses the available corner above the room edge.
-  const niche=new THREE.Group();niche.name='Подсвеченные полки ТВ-зоны';niche.position.set(9.22,0,3.04);details.add(niche);
-  for(const z of [-.16,.16])b(niche,'Боковина ниши',.32,2.48,.035,0,1.32,z,m.cabinet);
-  for(const y of [.52,1.08,1.64,2.2])b(niche,'Полка ниши',.32,.025,.35,0,y,0,m.stone);
-  niche.userData={glassDoor:true,width:.355,depth:.32,internalLighting:'3000K'};
-  b(niche,'Задняя панель витрины гостиной',.018,2.48,.32,.151,1.32,0,m.cabinet);
-  for(const y of [.08,2.56])b(niche,'Дно и верх витрины гостиной',.32,.025,.355,0,y,0,m.cabinet);
-  const nicheGlass=b(niche,'Стеклянная дверь витрины гостиной',.008,2.46,.32,-.169,1.32,0,m.glass);nicheGlass.castShadow=false;
-  for(const z of [-.164,.164])b(niche,'Рама двери витрины гостиной',.018,2.48,.012,-.169,1.32,z,m.metal);
-  for(const y of [.08,2.56])b(niche,'Рама двери витрины гостиной',.018,.012,.34,-.169,y,0,m.metal);
-  b(niche,'Ручка витрины гостиной',.025,.11,.014,-.191,1.08,.13,m.metal);
+  const livingDisplayWidth=.45,livingDisplayRight=3.2175,livingDisplayLeft=livingDisplayRight-livingDisplayWidth,livingDisplayCenter=(livingDisplayLeft+livingDisplayRight)/2;
+  const livingMirrorStart=1.32,livingMirrorEnd=livingDisplayLeft,livingMirrorWidth=livingMirrorEnd-livingMirrorStart;
+  const wallMirror=new THREE.Mesh(new THREE.PlaneGeometry(livingMirrorWidth,2.823),mirrorMaterial);wallMirror.name='Зеркало кухни-гостиной';wallMirror.rotation.y=-Math.PI/2;wallMirror.position.set(9.435,2.823/2,(livingMirrorStart+livingMirrorEnd)/2);wallMirror.userData={type:'fullHeightMirror',width:livingMirrorWidth,height:2.823,reducedForDisplay:true};decor.add(wallMirror);
+  // The illuminated display is the same 45 cm width as the bedroom display and expands left into the former mirror area.
+  const niche=new THREE.Group();niche.name='Подсвеченные полки ТВ-зоны';niche.position.set(9.22,0,livingDisplayCenter);details.add(niche);
+  for(const z of [-livingDisplayWidth/2,livingDisplayWidth/2])b(niche,'Боковина ниши',.32,2.48,.022,0,1.32,z,m.cabinet);
+  for(const y of [.52,1.08,1.64,2.2])b(niche,'Полка ниши',.32,.025,livingDisplayWidth-.04,0,y,0,m.stone);
+  niche.userData={glassDoor:true,width:livingDisplayWidth,depth:.32,internalLighting:'3000K',matchesBedroomDisplay:true,expandedLeft:true};
+  b(niche,'Задняя панель витрины гостиной',.018,2.48,livingDisplayWidth,.151,1.32,0,m.cabinet);
+  for(const y of [.08,2.56])b(niche,'Дно и верх витрины гостиной',.32,.025,livingDisplayWidth,0,y,0,m.cabinet);
+  const nicheGlass=b(niche,'Стеклянная дверь витрины гостиной',.008,2.46,livingDisplayWidth-.024,-.169,1.32,0,m.glass);nicheGlass.castShadow=false;
+  for(const z of [-livingDisplayWidth/2+.006,livingDisplayWidth/2-.006])b(niche,'Рама двери витрины гостиной',.018,2.48,.012,-.169,1.32,z,m.metal);
+  for(const y of [.08,2.56])b(niche,'Рама двери витрины гостиной',.018,.012,livingDisplayWidth,-.169,y,0,m.metal);
+  b(niche,'Ручка витрины гостиной',.025,.11,.014,-.191,1.08,livingDisplayWidth/2-.045,m.metal);
   const nicheLed=new THREE.MeshStandardMaterial({name:'Подсветка витрины гостиной 3000К',color:'#fff1d5',emissive:'#ffd399',emissiveIntensity:2.5});
-  for(const z of [-.136,.136])b(niche,'LED витрины гостиной',.009,2.40,.008,.123,1.32,z,nicheLed);
+  for(const z of [-livingDisplayWidth/2+.023,livingDisplayWidth/2-.023])b(niche,'LED витрины гостиной',.009,2.40,.008,.123,1.32,z,nicheLed);
   // Upper kitchen cabinets and backsplash follow the existing lower cabinet run.
   b(details,'Каменный кухонный фартук',2.63,.65,.027,6.84,1.205,.02,m.stone);
   const upperRunStart=5.007,upperRunEnd=7.967,upperGap=.01,upperCabinetHeight=1.02,upperCabinetCenterY=2.075,upperCabinetTop=upperCabinetCenterY+upperCabinetHeight/2;
@@ -192,6 +195,8 @@ export function addInterior({model,walls,furniture,floors,openings,data,m,box,cy
   fridgeGroup.clear();fridgeGroup.position.set(fridge.x,0,fridgeWorkDepth/2);fridgeGroup.userData={...fridgeGroup.userData,z:fridgeWorkDepth/2,d:fridgeWorkDepth,depthMetres:fridgeWorkDepth,alignedWithWorkZone:true};
   b(fridgeGroup,'Корпус холодильника',fridge.w,fridge.h,fridgeWorkDepth,0,fridge.h/2,0,m.cabinet,.008);
   for(const x of [-fridge.w/4,fridge.w/4]){b(fridgeGroup,'Фасад холодильника',fridge.w/2-.008,fridge.h-.10,.022,x,fridge.h/2,fridgeWorkDepth/2+.012,m.cabinet);framedPanel(fridgeGroup,x,fridge.h/2,fridgeWorkDepth/2+.036,fridge.w/2-.10,fridge.h-.22,m.cabinet);b(fridgeGroup,'Ручка холодильника',.016,.34,.03,x+(x<0?.14:-.14),1.16,fridgeWorkDepth/2+.055,m.metal);}
+  const leftWorkSection=data.furniture.find(item=>item.kind==='appliance'),leftWorkGroup=furniture.children.find(group=>group.userData.kind==='appliance'),fridgeRight=fridge.x+fridge.w/2,leftWorkRight=leftWorkSection.x+leftWorkSection.w/2,leftWorkWidth=leftWorkRight-fridgeRight;
+  leftWorkGroup.position.x=(fridgeRight+leftWorkRight)/2;leftWorkGroup.scale.x=leftWorkWidth/leftWorkSection.w;leftWorkGroup.userData={...leftWorkGroup.userData,x:leftWorkGroup.position.x,w:leftWorkWidth,extendedToFridge:true,gapToFridge:0};
   const fridgeTop=fridge.h,fridgeUpperHeight=upperCabinetTop-fridgeTop,fridgeUpperY=fridgeTop+fridgeUpperHeight/2,fridgeUpperDepth=fridgeWorkDepth;
   const fridgeUpper=b(details,'Навесной шкаф над холодильником',fridge.w,fridgeUpperHeight,fridgeUpperDepth,fridge.x,fridgeUpperY,fridgeUpperDepth/2,m.cabinet);
   fridgeUpper.userData={depthMetres:fridgeUpperDepth,widthMetres:fridge.w,topMetres:upperCabinetTop,alignedWithUpperCabinets:true,alignedWithFridgeDepth:true};
@@ -202,7 +207,7 @@ export function addInterior({model,walls,furniture,floors,openings,data,m,box,cy
   b(lamps,'Подсветка под шкафами',upperRunEnd-upperRunStart-.08,.009,.02,(upperRunStart+upperRunEnd)/2,1.548,upperDepth-.02,emissive);
   function point(name,x,y,z,power=8){const l=new THREE.PointLight('#ffe4bd',power,5,2);l.name=name;l.position.set(x,y,z);lamps.add(l);lightSources.push(l);return l;}
   for(const x of [5.30,6.49,7.67])point('Свет фартука',x,1.45,.46,2.2);
-  for(const y of [.30,.80,1.36,1.92,2.38])point('Подсветка ниши',9.27,y,3.04,.32);
+  for(const y of [.30,.80,1.36,1.92,2.38])point('Подсветка ниши',9.27,y,livingDisplayCenter,.32);
   // Ceiling follows the kitchen + living floor polygons. It is shown in interior views only.
   for(const f of data.floors.filter(f=>['Кухня-столовая','Гостиная','Прихожая'].includes(f.name)))prism(ceiling,'Потолок · '+f.name,f.points,.045,2.823,m.white);
   for(const [x,z] of [[4.5,.95],[6.15,.95],[8.5,.95],[8.9,2.4],[6.25,3.25],[8.8,4.85]]){
@@ -221,6 +226,9 @@ export function addInterior({model,walls,furniture,floors,openings,data,m,box,cy
   b(lamps,'Тёплая линия бра гостиной снизу',.020,.44,.010,6.185,1.28,5.255,livingSconceGlow);
   point('Бра гостиной · верхний свет',6.185,1.88,5.12,.9);
   point('Бра гостиной · нижний свет',6.185,1.22,5.12,.9);
+  framedPanel(decor,5.795,1.72,4.17,1.70,1.58,m.white,Math.PI/2);
+  b(decor,'Тонкая латунная рама картины гостиной',.035,.76,1.16,5.804,1.72,4.17,m.metal);
+  const livingPainting=new THREE.Mesh(new THREE.PlaneGeometry(1.10,.70),m.livingArt);livingPainting.name='Горный пейзаж над диваном';livingPainting.rotation.y=Math.PI/2;livingPainting.position.set(5.824,1.72,4.17);livingPainting.castShadow=true;decor.add(livingPainting);
   // Textile: rug, curtains and tulle; doorway itself remains usable and transparent.
   rounded(details,'Светлый шерстяной ковёр',2.38,.018,1.94,7.56,.022,4.17,m.rug,.015);
   function curtain(x,width,z,material,name){
@@ -252,7 +260,7 @@ export function addInterior({model,walls,furniture,floors,openings,data,m,box,cy
   }
   plant(table.x,table.h+.028,table.z,.52);
   const coffee=data.furniture.find(f=>f.kind==='roundtable');vase(coffee.x,coffee.h+.027,coffee.z,.13);
-  plant(8.98,.025,2.21,1.35);
+  plant(8.98,.025,(livingMirrorStart+livingMirrorEnd)/2,1.35);
   for(const [x,z] of [[5.7,.21],[7.5,.2]])vase(x,.915,z,.14);
   // Frame mouldings on existing internal door leaves.
   for(const frame of openings.children){
@@ -275,6 +283,12 @@ export function addInterior({model,walls,furniture,floors,openings,data,m,box,cy
   const mirrorStart=8.57677,mirrorEnd=9.48113-.20;
   const kitchenMirror=new THREE.Mesh(new THREE.PlaneGeometry(mirrorEnd-mirrorStart,2.823),new THREE.MeshStandardMaterial({name:'Зеркало справа от кухни',color:'#f2f4f3',metalness:1,roughness:.015,side:THREE.DoubleSide}));
   kitchenMirror.name='Зеркало справа от кухонного пенала';kitchenMirror.position.set((mirrorStart+mirrorEnd)/2,2.823/2,.015);kitchenMirror.userData={type:'fullHeightMirror',width:mirrorEnd-mirrorStart,height:2.823,wallReservedForIntercom:.20};decor.add(kitchenMirror);
+  const intercomWhite=new THREE.MeshStandardMaterial({name:'Белый корпус видеодомофона',color:'#f4f3ef',roughness:.58}),intercomButton=new THREE.MeshStandardMaterial({name:'Кнопки видеодомофона',color:'#c9c9c6',metalness:.18,roughness:.48});
+  const intercom=new THREE.Group();intercom.name='Видеодомофон справа от кухонного зеркала';intercom.position.set((mirrorEnd+9.48113)/2,1.43,.04);intercom.userData={type:'videoIntercom',width:.18,height:.15,alignedToMicrowave:true};decor.add(intercom);
+  b(intercom,'Белый корпус видеодомофона',.18,.15,.026,0,0,0,intercomWhite,.012);
+  b(intercom,'Экран видеодомофона',.145,.073,.008,0,.025,.017,m.dark,.005);
+  for(let i=0;i<5;i++){const button=cylinder(intercom,'Кнопка видеодомофона',.009,.006,-.058+i*.029,-.047,.018,intercomButton);button.rotation.x=Math.PI/2;}
+  for(const x of [-.076,.076]){const dot=cylinder(intercom,'Индикатор видеодомофона',.0025,.005,x,-.047,.018,m.dark);dot.rotation.x=Math.PI/2;}
   const hob=furniture.children.find(g=>g.userData.kind==='hob');
   for(const o of hob.children.slice())if(o.name==='Профилированная рамка')hob.remove(o);
   b(hob,'Духовка под варочной панелью 595 × 595',.595,.595,.035,0,.455,.322,m.dark);

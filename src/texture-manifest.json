@@ -1,0 +1,100 @@
+[
+  {
+    "id": "parquet",
+    "source": "C:\\Users\\igorg\\.codex\\generated_images\\01a09edf-4392-7271-a8f1-b32bcf4bb6b0\\exec-df29ebe3-bc15-4442-af90-6e46d047643c.png",
+    "file": "textures/parquet.png",
+    "metresPerTile": 1.8,
+    "roughness": 0.62,
+    "prompt": "Use case: stylized-concept. Asset type: seamless physically based interior floor base-color texture, a single square flat texture image. Create photorealistic light natural European oak parquet in classic 90-degree herringbone (not chevron), warm pale beige honey, restrained low contrast with subtle individual plank color variation and fine longitudinal wood grain. Orthographic straight overhead view, uniform neutral diffuse lighting, no perspective, no directional shadows, no highlights, no vignette, no room, no furniture, no labels or borders. Texture fills frame and tiles seamlessly left-right and top-bottom. The square represents 1.8 by 1.8 metres, planks approximately 12 by 60 cm. Intended for elegant warm greige neoclassical apartment like the user's references. Produce an actual clean albedo texture, not an interior render. High detail.",
+    "generator": "Built-in ImageGen",
+    "note": "Pattern reference; final herringbone can use per-plank oak to guarantee layout continuity."
+  },
+  {
+    "id": "oak",
+    "source": "C:\\Users\\igorg\\.codex\\generated_images\\01a09edf-4392-7271-a8f1-b32bcf4bb6b0\\exec-7a73d33f-286b-4ed3-8c00-2b162b0227ec.png",
+    "file": "textures/oak.png",
+    "metresPerTile": 0.6,
+    "roughness": 0.55,
+    "prompt": "Photorealistic seamless tileable base-color texture of pale natural European oak wood, straight fine grain running vertically throughout image, warm sand beige with restrained honey undertones and tiny pores, no dark knots. Single flat square 0.6 metre sample. Orthographic frontal, perfectly even neutral illumination, NO perspective shadows gradients bevels planks seams objects borders text. Fill entire square with uniform clean real wood grain. For neoclassical furniture, ribbed table pedestals and parquet plank meshes.",
+    "generator": "Built-in ImageGen",
+    "note": "Mirrored repeat ensures continuity at boundaries; geometry defines large-scale relief."
+  },
+  {
+    "id": "stone",
+    "source": "C:\\Users\\igorg\\.codex\\generated_images\\01a09edf-4392-7271-a8f1-b32bcf4bb6b0\\exec-90f49435-9519-4059-b3a5-e7e05760465f.png",
+    "file": "textures/stone.png",
+    "metresPerTile": 1.2,
+    "roughness": 0.3,
+    "prompt": "Photorealistic seamless tileable albedo texture of warm ivory cream limestone with subtle faint taupe marble veins, elegant quiet stone for kitchen backsplash and dining table. Square represents 1.2 x 1.2 metres. Very restrained sparse hairline veining, low contrast and no dramatic dark veins. Flat orthographic, diffuse uniform neutral lighting without shadows reflections perspective vignette borders objects or text. Entire image filled by continuous stone surface.",
+    "generator": "Built-in ImageGen",
+    "note": "Mirrored repeat ensures continuity at boundaries; geometry defines large-scale relief."
+  },
+  {
+    "id": "fabric",
+    "source": "C:\\Users\\igorg\\.codex\\generated_images\\01a09edf-4392-7271-a8f1-b32bcf4bb6b0\\exec-2374c45d-4419-4560-ba51-28add0592f74.png",
+    "file": "textures/fabric.png",
+    "metresPerTile": 0.3,
+    "roughness": 0.92,
+    "prompt": "Photorealistic seamless tileable albedo texture of warm oatmeal beige woven linen upholstery for a neoclassical sofa and chairs. Fine irregular yarns and subtle interwoven slubs, soft matte tactile textile, calm light cream beige. Macro square represents 0.30 x 0.30 metres. Flat taut fabric with NO folds, NO seams, NO buttons, NO perspective, NO shadows, NO lighting gradients, NO borders, NO text. Uniform neutral illumination, texture covers the entire frame and tiles on all edges.",
+    "generator": "Built-in ImageGen",
+    "note": "Mirrored repeat ensures continuity at boundaries; geometry defines large-scale relief."
+  },
+  {
+    "id": "paint",
+    "source": "C:\\Users\\igorg\\.codex\\generated_images\\01a09edf-4392-7271-a8f1-b32bcf4bb6b0\\exec-fca800e7-4fe2-4508-8b7f-d013b01b090d.png",
+    "file": "textures/paint.png",
+    "metresPerTile": 0.5,
+    "roughness": 0.82,
+    "prompt": "Photorealistic square seamless tileable base-color material sample of warm off-white matte painted plaster, extremely subtle fine eggshell stipple at real wall scale 0.5 x 0.5 metres. Very low contrast uniform ivory color, smooth sophisticated neoclassical painted wall surface, not rough concrete. Orthographic frontal flat uniform diffuse neutral lighting. No shadows, no gradient, no vignette, no cracks, no wall panels, no lines, no objects, no perspective, no text. Tile edge to edge.",
+    "generator": "Built-in ImageGen",
+    "note": "Mirrored repeat ensures continuity at boundaries; geometry defines large-scale relief."
+  },
+  {
+    "id": "rug",
+    "source": "C:\\Users\\igorg\\.codex\\generated_images\\01a09edf-4392-7271-a8f1-b32bcf4bb6b0\\exec-87acc452-5b14-4ee9-8dbd-aa607b079ea4.png",
+    "file": "textures/rug.png",
+    "metresPerTile": 0.5,
+    "roughness": 1,
+    "prompt": "Photorealistic square seamless tileable texture of short dense warm cream beige wool rug pile, subtle slightly mottled organic tonal pattern, soft small scale loops, refined neutral ivory and sand rug. Sample real scale 0.5 by 0.5 metres. Flat top down, uniform diffuse light, no rug edges, no border, no fringe, no perspective, no cast shadows, no large pattern, no text or objects. Entire image covered in same consistent wool surface, tiling edges.",
+    "generator": "Built-in ImageGen",
+    "note": "Mirrored repeat ensures continuity at boundaries; geometry defines large-scale relief."
+  },
+  {
+    "id": "curtain",
+    "source": "C:\\Users\\igorg\\.codex\\generated_images\\01a09edf-4392-7271-a8f1-b32bcf4bb6b0\\exec-7db82990-b702-483d-a95a-a163111f0647.png",
+    "file": "textures/curtain.png",
+    "metresPerTile": 0.35,
+    "roughness": 0.96,
+    "prompt": "Photorealistic seamless square flat textile base-color texture: pale warm ivory linen curtain fabric, fine loose natural vertical and horizontal weave, airy soft light neutral ecru. Real sample scale 0.35 metres square. Completely FLAT unfolded fabric surface, no drapery folds, no shadows, no lighting gradient, no perspective, no border or objects. Fine natural fiber variation. Edge to edge seamless textile for 3D curtain geometry. No text.",
+    "generator": "Built-in ImageGen",
+    "note": "Mirrored repeat ensures continuity at boundaries; geometry defines large-scale relief."
+  },
+  {
+    "id": "throw",
+    "source": "C:\\Users\\igorg\\.codex\\generated_images\\01a09edf-4392-7271-a8f1-b32bcf4bb6b0\\exec-1dfd34ba-8fd4-435a-8791-09e58cd049e7.png",
+    "file": "textures/throw.png",
+    "metresPerTile": 0.4,
+    "roughness": 0.96,
+    "prompt": "Photorealistic seamless square textile texture, small herringbone woven wool blanket weave in muted taupe and ivory yarn, elegant warm neoclassical throw fabric. Sample scale 0.4 metres square, fine chevron textile pattern with soft natural fibers. Flat even neutral lighting, NO folds NO shadows NO tassels NO borders NO perspective NO text. Uniform tileable edges, no oversized graphic contrast.",
+    "generator": "Built-in ImageGen",
+    "note": "Mirrored repeat ensures continuity at boundaries; geometry defines large-scale relief."
+  },
+  {
+    "id": "bedroomArt",
+    "file": "textures/bedroom-art.png",
+    "generator": "Built-in ImageGen",
+    "note": "Framed artwork above bedroom headboard; standard 0–1 UV.",
+    "prompt": "Horizontal abstract landscape painting, ivory sand taupe hills, low contrast painterly texture, flat artwork only, no frame shadows text; 3:2 landscape."
+  },
+  {
+    "id": "livingArt",
+    "file": "living-art-feng-shui.png",
+    "generator": "Built-in ImageGen",
+    "note": "Mountain landscape above the living-room sofa; stable mountain composition and continuous valley without water.",
+    "prompt": "Serene horizontal mountain landscape conveying stability, support, calm growth and balance; layered rounded mountains, softly forested valley, warm ivory, sand, taupe, muted sage and soft gold; no water, buildings, people, animals or text."
+  },
+  {
+    "id": "bathroomStone",
+    "file": "renders/bathroom-stone.png"
+  }
+]
