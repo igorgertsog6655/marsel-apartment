@@ -1,10 +1,10 @@
 import * as THREE from 'three';
 export function addHall({furniture,decor,ceiling,lamps,data,m,b,rounded,framedPanel,prism,point,cylinder}){
-  const width=1.488,height=2.823,benchX=9.71216+width/2;
+  const width=1.488,height=2.823,benchX=9.71216+width/2,wallFaceZ=-3.445081;
   const mirror=new THREE.Mesh(new THREE.PlaneGeometry(width,height),new THREE.MeshStandardMaterial({name:'Зеркало прихожей',color:'#f2f4f3',metalness:1,roughness:.015,side:THREE.DoubleSide}));
-  mirror.name='Зеркало прихожей';mirror.position.set(benchX,height/2,-3.35);mirror.userData={type:'fullHeightMirror',width,height};decor.add(mirror);
-  for(const x of [benchX-width/2,benchX+width/2])b(decor,'Латунная кромка зеркала',.012,height,.018,x,height/2,-3.33,m.metal);
-  const bench=furniture.children.find(g=>g.name==='Пуф');bench.clear();bench.name='Банкетка прихожей';bench.position.set(benchX,0,-3.09);bench.rotation.y=0;
+  mirror.name='Зеркало прихожей';mirror.position.set(benchX,height/2,wallFaceZ+.006);mirror.userData={type:'fullHeightMirror',width,height,flushToWall:true};decor.add(mirror);
+  for(const x of [benchX-width/2,benchX+width/2])b(decor,'Латунная кромка зеркала',.012,height,.018,x,height/2,wallFaceZ+.015,m.metal);
+  const bench=furniture.children.find(g=>g.name==='Пуф');bench.clear();bench.name='Банкетка прихожей';bench.position.set(benchX,0,wallFaceZ+.43/2);bench.rotation.y=0;
   const bw=width;bench.userData={width:bw,mirrorWidth:width,widthRatio:1,wardrobeWallX:9.71216};
   b(bench,'Цоколь банкетки',bw-.04,.09,.39,0,.055,0,m.cabinet);
   b(bench,'Корпус банкетки',bw,.32,.42,0,.25,0,m.cabinet);
