@@ -11,6 +11,9 @@ export function createModel(textures={}) {
   model.add(floors,walls,furniture,openings);
   const mat=(color,roughness=.7,extra={})=>new THREE.MeshStandardMaterial({color,roughness,...extra});
   const m=makeMaterialSet(textures);
+  const exteriorWallMaterial=m.wall.clone();
+  exteriorWallMaterial.name='Наружные стены · постоянный серый';
+  exteriorWallMaterial.color.set('#b7bab8');
   function box(parent,name,w,h,d,x,y,z,material,round=0){
     const geo=round?new RoundedBoxGeometry(w,h,d,2,Math.min(round,w/3,h/3,d/3)):new THREE.BoxGeometry(w,h,d);
     applyPhysicalUV(geo,material);const mesh=new THREE.Mesh(geo,material); mesh.name=name;mesh.position.set(x,y,z);mesh.castShadow=true;mesh.receiveShadow=true;parent.add(mesh);return mesh;
@@ -20,6 +23,38 @@ export function createModel(textures={}) {
     const shape=new THREE.Shape(points.map(([x,z])=>new THREE.Vector2(x,-z)));
     const geo=new THREE.ExtrudeGeometry(shape,{depth:height,bevelEnabled:false});geo.rotateX(-Math.PI/2);
     applyPhysicalUV(geo,material);const mesh=new THREE.Mesh(geo,material);mesh.name=name;mesh.position.y=y;mesh.castShadow=true;mesh.receiveShadow=true;parent.add(mesh);return mesh;
+  }
+  function isInsideApartment(x,z){
+    return data.floors.some(({points})=>{
+      let inside=false;
+      for(let i=0,j=points.length-1;i<points.length;j=i++){
+        const [xi,zi]=points[i],[xj,zj]=points[j];
+        if(((zi>z)!==(zj>z))&&(x<(xj-xi)*(z-zi)/(zj-zi)+xi))inside=!inside;
+      }
+      return inside;
+    });
+  }
+  function keepExteriorWallFacesGray(mesh){
+    const original=mesh.geometry,geometry=original.index?original.toNonIndexed():original;
+    if(geometry!==original){mesh.geometry=geometry;original.dispose();}
+    geometry.clearGroups();mesh.updateWorldMatrix(true,false);
+    const positions=geometry.attributes.position,normals=geometry.attributes.normal;
+    const center=new THREE.Vector3(),normal=new THREE.Vector3(),normalMatrix=new THREE.Matrix3().getNormalMatrix(mesh.matrixWorld);
+    for(let i=0;i<positions.count;i+=3){
+      center.set(0,0,0);normal.set(0,0,0);
+      for(let k=0;k<3;k++){
+        center.x+=positions.getX(i+k);center.y+=positions.getY(i+k);center.z+=positions.getZ(i+k);
+        normal.x+=normals.getX(i+k);normal.y+=normals.getY(i+k);normal.z+=normals.getZ(i+k);
+      }
+      center.multiplyScalar(1/3).applyMatrix4(mesh.matrixWorld);normal.normalize().applyMatrix3(normalMatrix).normalize();
+      let exterior=false;
+      if(Math.abs(normal.y)<.45){
+        const outward=center.clone().addScaledVector(normal,.42),inward=center.clone().addScaledVector(normal,-.42);
+        exterior=!isInsideApartment(outward.x,outward.z)&&isInsideApartment(inward.x,inward.z);
+      }
+      geometry.addGroup(i,3,exterior?1:0);
+    }
+    mesh.material=[m.wall,exteriorWallMaterial];
   }
   for(const f of data.floors) prism(floors,f.name,f.points,.14,-.14,m[f.kind]);
   for(const w of data.walls) prism(walls,w.name,w.points,data.height,0,m.wall);
@@ -69,6 +104,7 @@ export function createModel(textures={}) {
     for(const x of [-width/2,0,width/2])box(frame,'Оконная рама',.04,w.height,.07,x,w.height/2,0,m.white);
     for(const y of [0,w.height])box(frame,'Оконная рама',width,.04,.07,0,y,0,m.white);
   }
+  walls.updateMatrixWorld(true);walls.traverse(o=>{if(o.isMesh)keepExteriorWallFacesGray(o);});
   // Balcony footprints reconstructed from the user's supplementary diagram.
   // 3.54 and 2.07 are area labels, not dimension chains. Unspecified depths are approximate.
   const balconies=new THREE.Group();balconies.name='Балконы по дополнительной схеме';model.add(balconies);
