@@ -188,7 +188,11 @@ export function addInterior({model,walls,furniture,floors,openings,data,m,box,cy
     b(details,'Рамочный фасад верхнего шкафа',upperWidth-.014,.99,.022,x,2.075,upperDepth+.012,m.cabinet);
     framedPanel(details,x,2.075,upperDepth+.036,upperWidth-.10,.88,m.cabinet);b(details,'Латунная ручка шкафа',.065,.012,.028,x+.14,1.67,upperDepth+.053,m.metal);
   }
-  const fridge=data.furniture.find(item=>item.kind==='fridge'),fridgeTop=fridge.h,fridgeUpperHeight=upperCabinetTop-fridgeTop,fridgeUpperY=fridgeTop+fridgeUpperHeight/2,fridgeUpperDepth=fridge.d;
+  const fridge=data.furniture.find(item=>item.kind==='fridge'),fridgeWorkDepth=.60,fridgeGroup=furniture.children.find(group=>group.userData.kind==='fridge');
+  fridgeGroup.clear();fridgeGroup.position.set(fridge.x,0,fridgeWorkDepth/2);fridgeGroup.userData={...fridgeGroup.userData,z:fridgeWorkDepth/2,d:fridgeWorkDepth,depthMetres:fridgeWorkDepth,alignedWithWorkZone:true};
+  b(fridgeGroup,'Корпус холодильника',fridge.w,fridge.h,fridgeWorkDepth,0,fridge.h/2,0,m.cabinet,.008);
+  for(const x of [-fridge.w/4,fridge.w/4]){b(fridgeGroup,'Фасад холодильника',fridge.w/2-.008,fridge.h-.10,.022,x,fridge.h/2,fridgeWorkDepth/2+.012,m.cabinet);framedPanel(fridgeGroup,x,fridge.h/2,fridgeWorkDepth/2+.036,fridge.w/2-.10,fridge.h-.22,m.cabinet);b(fridgeGroup,'Ручка холодильника',.016,.34,.03,x+(x<0?.14:-.14),1.16,fridgeWorkDepth/2+.055,m.metal);}
+  const fridgeTop=fridge.h,fridgeUpperHeight=upperCabinetTop-fridgeTop,fridgeUpperY=fridgeTop+fridgeUpperHeight/2,fridgeUpperDepth=fridgeWorkDepth;
   const fridgeUpper=b(details,'Навесной шкаф над холодильником',fridge.w,fridgeUpperHeight,fridgeUpperDepth,fridge.x,fridgeUpperY,fridgeUpperDepth/2,m.cabinet);
   fridgeUpper.userData={depthMetres:fridgeUpperDepth,widthMetres:fridge.w,topMetres:upperCabinetTop,alignedWithUpperCabinets:true,alignedWithFridgeDepth:true};
   b(details,'Рамочный фасад шкафа над холодильником',fridge.w-.014,fridgeUpperHeight-.03,.022,fridge.x,fridgeUpperY,fridgeUpperDepth+.012,m.cabinet);
