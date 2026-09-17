@@ -179,16 +179,21 @@ export function addInterior({model,walls,furniture,floors,openings,data,m,box,cy
   for(const z of [-.136,.136])b(niche,'LED витрины гостиной',.009,2.40,.008,.123,1.32,z,nicheLed);
   // Upper kitchen cabinets and backsplash follow the existing lower cabinet run.
   b(details,'Каменный кухонный фартук',2.63,.65,.027,6.84,1.205,.02,m.stone);
-  const upperRunStart=5.007,upperRunEnd=7.967,upperGap=.01;
+  const upperRunStart=5.007,upperRunEnd=7.967,upperGap=.01,upperCabinetHeight=1.02,upperCabinetCenterY=2.075,upperCabinetTop=upperCabinetCenterY+upperCabinetHeight/2;
   const upperWidth=(upperRunEnd-upperRunStart-upperGap*4)/5,upperDepth=.40;
   for(let i=0;i<5;i++){
     const x=upperRunStart+upperWidth/2+i*(upperWidth+upperGap);
-    const cabinet=b(details,'Верхний кухонный шкаф',upperWidth,1.02,upperDepth,x,2.075,upperDepth/2,m.cabinet);
+    const cabinet=b(details,'Верхний кухонный шкаф',upperWidth,upperCabinetHeight,upperDepth,x,upperCabinetCenterY,upperDepth/2,m.cabinet);
     cabinet.userData={depthMetres:upperDepth,alignedOverWorktop:true,noTallUnitOverlap:true};
     b(details,'Рамочный фасад верхнего шкафа',upperWidth-.014,.99,.022,x,2.075,upperDepth+.012,m.cabinet);
     framedPanel(details,x,2.075,upperDepth+.036,upperWidth-.10,.88,m.cabinet);b(details,'Латунная ручка шкафа',.065,.012,.028,x+.14,1.67,upperDepth+.053,m.metal);
   }
-  b(details,'Фриз кухонной мебели',upperRunEnd-upperRunStart,.12,upperDepth+.02,(upperRunStart+upperRunEnd)/2,2.64,upperDepth/2,m.cabinet);
+  const fridge=data.furniture.find(item=>item.kind==='fridge'),fridgeTop=fridge.h,fridgeUpperHeight=upperCabinetTop-fridgeTop,fridgeUpperY=fridgeTop+fridgeUpperHeight/2,fridgeUpperDepth=fridge.d;
+  const fridgeUpper=b(details,'Навесной шкаф над холодильником',fridge.w,fridgeUpperHeight,fridgeUpperDepth,fridge.x,fridgeUpperY,fridgeUpperDepth/2,m.cabinet);
+  fridgeUpper.userData={depthMetres:fridgeUpperDepth,widthMetres:fridge.w,topMetres:upperCabinetTop,alignedWithUpperCabinets:true,alignedWithFridgeDepth:true};
+  b(details,'Рамочный фасад шкафа над холодильником',fridge.w-.014,fridgeUpperHeight-.03,.022,fridge.x,fridgeUpperY,fridgeUpperDepth+.012,m.cabinet);
+  framedPanel(details,fridge.x,fridgeUpperY,fridgeUpperDepth+.036,fridge.w-.10,fridgeUpperHeight-.11,m.cabinet);
+  b(details,'Латунная ручка шкафа над холодильником',.065,.012,.028,fridge.x+.27,fridgeTop+.10,fridgeUpperDepth+.053,m.metal);
   const emissive=new THREE.MeshStandardMaterial({name:'Тёплая подсветка',color:'#fff0cb',emissive:'#ffe1a3',emissiveIntensity:2});
   b(lamps,'Подсветка под шкафами',upperRunEnd-upperRunStart-.08,.009,.02,(upperRunStart+upperRunEnd)/2,1.548,upperDepth-.02,emissive);
   function point(name,x,y,z,power=8){const l=new THREE.PointLight('#ffe4bd',power,5,2);l.name=name;l.position.set(x,y,z);lamps.add(l);lightSources.push(l);return l;}
@@ -205,6 +210,11 @@ export function addInterior({model,walls,furniture,floors,openings,data,m,box,cy
   cylinder(lamps,'Подвес светильника',.006,.76,table.x,2.40,table.z,m.metal);
   cylinder(lamps,'Латунный диск светильника',.31,.034,table.x,2.0,table.z,m.metal);
   cylinder(lamps,'Светящийся диск',.286,.012,table.x,1.979,table.z,emissive);point('Подвес над столом',table.x,1.87,table.z,8);
+  const livingSconceGlow=new THREE.MeshStandardMaterial({name:'Мягкая подсветка бра гостиной 2700К',color:'#fff0d5',emissive:'#ffd19a',emissiveIntensity:1.8,roughness:.5});
+  const livingSconceBase=cylinder(lamps,'Основание бра гостиной',.075,.028,5.79,1.74,4.86,m.metal);livingSconceBase.rotation.z=Math.PI/2;
+  b(lamps,'Кронштейн бра гостиной',.18,.018,.018,5.89,1.74,4.86,m.metal);
+  const livingSconceGlobe=new THREE.Mesh(new THREE.SphereGeometry(.105,24,16),livingSconceGlow);livingSconceGlobe.name='Плафон бра гостиной';livingSconceGlobe.position.set(6.00,1.70,4.86);livingSconceGlobe.castShadow=true;lamps.add(livingSconceGlobe);
+  point('Бра гостиной',6.06,1.66,4.86,1.7);
   // Textile: rug, curtains and tulle; doorway itself remains usable and transparent.
   rounded(details,'Светлый шерстяной ковёр',2.38,.018,1.94,7.56,.022,4.17,m.rug,.015);
   function curtain(x,width,z,material,name){
@@ -249,12 +259,13 @@ export function addInterior({model,walls,furniture,floors,openings,data,m,box,cy
   }
   addBedroom({data,furniture,details,decor,ceiling,lamps,m,b,rounded,framedPanel,curtain,plant,cylinder,prism,point,applyPhysicalUV});
   const tower=furniture.children.find(g=>g.userData.kind==='oven');tower.clear();
-  b(tower,'Корпус пенала СВЧ',.60,2.25,.60,0,1.125,0,m.cabinet);
-  for(const [y,h] of [[.59,1.02],[1.985,.45]]){b(tower,'Фасад без ручки',.584,h,.02,0,y,.313,m.cabinet);framedPanel(tower,0,y,.335,.49,h-.10,m.cabinet);}
+  b(tower,'Корпус пенала СВЧ',.60,upperCabinetTop,.60,0,upperCabinetTop/2,0,m.cabinet);
+  const upperTowerFacadeTop=upperCabinetTop-.02,upperTowerFacadeBottom=1.76,upperTowerFacadeHeight=upperTowerFacadeTop-upperTowerFacadeBottom;
+  for(const [y,h] of [[.59,1.02],[(upperTowerFacadeTop+upperTowerFacadeBottom)/2,upperTowerFacadeHeight]]){b(tower,'Фасад без ручки',.584,h,.02,0,y,.313,m.cabinet);framedPanel(tower,0,y,.335,.49,h-.10,m.cabinet);}
   b(tower,'Встроенная микроволновка 595 × 380',.595,.38,.04,0,1.43,.326,m.dark);
   b(tower,'Стекло СВЧ',.45,.255,.012,-.04,1.405,.353,m.dark);
   b(tower,'Панель управления СВЧ',.065,.27,.014,.245,1.43,.355,m.metal);
-  tower.userData.appliance='microwave only; handleless cabinet';
+  tower.userData.appliance='microwave only; handleless cabinet';tower.userData.heightMetres=upperCabinetTop;tower.userData.topAlignedWithUpperCabinets=true;
   const mirrorStart=8.57677,mirrorEnd=9.48113-.20;
   const kitchenMirror=new THREE.Mesh(new THREE.PlaneGeometry(mirrorEnd-mirrorStart,2.823),new THREE.MeshStandardMaterial({name:'Зеркало справа от кухни',color:'#f2f4f3',metalness:1,roughness:.015,side:THREE.DoubleSide}));
   kitchenMirror.name='Зеркало справа от кухонного пенала';kitchenMirror.position.set((mirrorStart+mirrorEnd)/2,2.823/2,.015);kitchenMirror.userData={type:'fullHeightMirror',width:mirrorEnd-mirrorStart,height:2.823,wallReservedForIntercom:.20};decor.add(kitchenMirror);

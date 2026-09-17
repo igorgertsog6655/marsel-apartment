@@ -27,6 +27,11 @@ export function addChild({furniture,details,decor,ceiling,lamps,data,m,b,rounded
  b(decor,'Римская штора',.04,.40,1.82,-.10,2.25,1.434,m.curtain);
  const room=data.floors.find(f=>f.name==='Кабинет');prism(ceiling,'Потолок детской',room.points,.045,2.823,m.white);
  cylinder(lamps,'Плафон детской',.26,.20,2,2.50,1.50,m.linen);point('Свет детской',2,2.28,1.50,5);
+ const childSconceGlow=new THREE.MeshStandardMaterial({name:'Мягкая подсветка бра детской 2700К',color:'#fff0d5',emissive:'#ffd19a',emissiveIntensity:1.8,roughness:.5});
+ const childSconceBase=cylinder(lamps,'Основание бра детской',.075,.028,3.945,1.76,.68,m.metal);childSconceBase.rotation.z=Math.PI/2;
+ b(lamps,'Кронштейн бра детской',.18,.018,.018,3.845,1.76,.68,m.metal);
+ const childSconceGlobe=new THREE.Mesh(new THREE.SphereGeometry(.105,24,16),childSconceGlow);childSconceGlobe.name='Плафон бра детской';childSconceGlobe.position.set(3.735,1.72,.68);childSconceGlobe.castShadow=true;lamps.add(childSconceGlobe);
+ point('Бра детской',3.66,1.68,.68,1.6);
  cylinder(lamps,'Лампа стола',.10,.16,1.05,1.04,2.69,m.metal);point('Свет стола',1.05,.96,2.58,1);
 }
 
