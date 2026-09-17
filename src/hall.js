@@ -10,24 +10,22 @@ export function addHall({furniture,decor,ceiling,lamps,data,m,b,rounded,framedPa
   b(bench,'Корпус банкетки',bw,.32,.42,0,.25,0,m.cabinet);
   for(const x of [-bw/3,0,bw/3]){framedPanel(bench,x,.25,.222,bw/3-.065,.24,m.cabinet);b(bench,'Латунная ручка',.095,.013,.025,x,.34,.24,m.metal);}
   rounded(bench,'Льняное сиденье',bw,.11,.43,0,.465,0,m.cloth,.035);
-  const g=furniture.children.find(g=>g.name==='Шкаф прихожей'),f=g.userData,w=f.w;
-  g.clear();g.name='Настенные крючки для пальто';g.rotation.y=Math.PI;
-  // Flush wall mounts on the former wardrobe's back wall; hooks face the entrance hall.
-  g.position.z=f.z+f.d/2-.018;
-  g.userData={...f,kind:'coatHooks',depth:.09,hookCount:5,frontDirection:'north, into corridor'};
-  rounded(g,'Бежевая панель под вешалками',w,2.10,.025,0,1.17,-.021,m.cabinet,.012);
-  for(let i=0;i<5;i++){
-    const x=(i-2)*(w-.24)/4;
-    rounded(g,'Латунное основание крючка',.035,.095,.016,x,1.65,0,m.metal,.008);
-    rounded(g,'Крючок для пальто',.018,.018,.075,x,1.635,.04,m.metal,.006);
-    rounded(g,'Загиб крючка вверх',.018,.048,.018,x,1.651,.075,m.metal,.006);
-  }
+  const g=furniture.children.find(g=>g.name==='Шкаф прихожей'),f=g.userData,w=f.w,d=.40;
+  g.clear();g.rotation.y=Math.PI;g.position.z=f.z+f.d/2-d/2;
+  g.userData={...f,d,originalDepth:f.d,depthMetres:.40,frontDirection:'north, into corridor'};
+  b(g,'Корпус шкафа прихожей',w,2.70,d,0,1.35,0,m.cabinet);
+  for(const x of [-w/4,w/4]){b(g,'Дверь к коридору',w/2-.012,2.60,.018,x,1.35,d/2+.009,m.cabinet);framedPanel(g,x,1.42,d/2+.024,w/2-.09,2.34,m.cabinet);b(g,'Латунная ручка шкафа',.018,.23,.025,x+(x<0?.20:-.20),1.05,d/2+.046,m.metal);}
+  b(g,'Карниз шкафа',w+.025,.08,d+.018,0,2.74,0,m.white);
   for(const name of ['Вешалка и обувь','Стеллаж прихожей']){
-    const s=furniture.children.find(o=>o.name===name),a=s.userData,sw=a.d,sd=a.w*.2;s.clear();s.rotation.y=-Math.PI/2;s.position.x=a.x+a.w/2-sd/2;
-    s.userData={...a,depth:sd,depthReduction:.8,frontDirection:'west, into corridor'};
-    b(s,'Задняя панель',sw,2.65,.012,0,1.325,-sd/2,m.cabinet);
-    for(const x of [-sw/2,sw/2])b(s,'Боковина',.015,2.65,sd,x,1.325,0,m.cabinet);
-    for(const y of [.06,.55,1.95,2.62])b(s,'Полка к коридору',sw,.02,sd,0,y,0,m.cabinet);
+    const s=furniture.children.find(o=>o.name===name),a=s.userData,sw=a.d;
+    s.clear();s.name='Вешалки для пальто · '+name;s.rotation.y=-Math.PI/2;s.position.x=a.x+a.w/2-.025;
+    s.userData={...a,kind:'coatHooks',depth:.10,hookCount:3,frontDirection:'west, into corridor'};
+    rounded(s,'Бежевая панель под вешалками',sw,2.10,.025,0,1.17,0,m.cabinet,.01);
+    for(const x of [-sw*.30,0,sw*.30]){
+      rounded(s,'Латунное основание крючка',.035,.095,.016,x,1.65,.020,m.metal,.006);
+      rounded(s,'Крючок для пальто',.018,.018,.075,x,1.635,.062,m.metal,.006);
+      rounded(s,'Загиб крючка вверх',.018,.048,.018,x,1.651,.098,m.metal,.006);
+    }
   }
   for(const x of [9.05,9.48])framedPanel(decor,x,1.45,-3.35,.31,2.25,m.white);
   b(decor,'Карниз прихожей',2.80,.085,.09,10.14,2.75,-3.32,m.white);
