@@ -211,10 +211,12 @@ export function addInterior({model,walls,furniture,floors,openings,data,m,box,cy
   cylinder(lamps,'Латунный диск светильника',.31,.034,table.x,2.0,table.z,m.metal);
   cylinder(lamps,'Светящийся диск',.286,.012,table.x,1.979,table.z,emissive);point('Подвес над столом',table.x,1.87,table.z,8);
   const livingSconceGlow=new THREE.MeshStandardMaterial({name:'Мягкая подсветка бра гостиной 2700К',color:'#fff0d5',emissive:'#ffd19a',emissiveIntensity:1.8,roughness:.5});
-  const livingSconceBase=cylinder(lamps,'Основание бра гостиной',.075,.028,5.79,1.74,4.86,m.metal);livingSconceBase.rotation.z=Math.PI/2;
-  b(lamps,'Кронштейн бра гостиной',.18,.018,.018,5.89,1.74,4.86,m.metal);
-  const livingSconceGlobe=new THREE.Mesh(new THREE.SphereGeometry(.105,24,16),livingSconceGlow);livingSconceGlobe.name='Плафон бра гостиной';livingSconceGlobe.position.set(6.00,1.70,4.86);livingSconceGlobe.castShadow=true;lamps.add(livingSconceGlobe);
-  point('Бра гостиной',6.06,1.66,4.86,1.7);
+  b(lamps,'Вертикальный профиль бра гостиной',.030,1.10,.030,6.185,1.55,5.235,m.dark);
+  b(lamps,'Центральное крепление бра гостиной',.12,.17,.060,6.185,1.55,5.235,m.dark);
+  b(lamps,'Тёплая линия бра гостиной сверху',.020,.44,.010,6.185,1.82,5.255,livingSconceGlow);
+  b(lamps,'Тёплая линия бра гостиной снизу',.020,.44,.010,6.185,1.28,5.255,livingSconceGlow);
+  point('Бра гостиной · верхний свет',6.185,1.88,5.12,.9);
+  point('Бра гостиной · нижний свет',6.185,1.22,5.12,.9);
   // Textile: rug, curtains and tulle; doorway itself remains usable and transparent.
   rounded(details,'Светлый шерстяной ковёр',2.38,.018,1.94,7.56,.022,4.17,m.rug,.015);
   function curtain(x,width,z,material,name){
