@@ -15,6 +15,7 @@ export function addHall({furniture,decor,ceiling,lamps,data,m,b,rounded,framedPa
   // Flush wall mounts on the former wardrobe's back wall; hooks face the entrance hall.
   g.position.z=f.z+f.d/2-.018;
   g.userData={...f,kind:'coatHooks',depth:.09,hookCount:5,frontDirection:'north, into corridor'};
+  rounded(g,'Бежевая панель под вешалками',w,2.10,.025,0,1.17,-.021,m.cabinet,.012);
   for(let i=0;i<5;i++){
     const x=(i-2)*(w-.24)/4;
     rounded(g,'Латунное основание крючка',.035,.095,.016,x,1.65,0,m.metal,.008);
