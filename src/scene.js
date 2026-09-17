@@ -52,7 +52,7 @@ export function createModel(textures={}) {
     }
     for(const x of [-width/2,width/2])box(frame,'Дверная коробка',.035,2.12,.1,x,1.06,0,m.oak);
     box(frame,'Дверная коробка',width,.04,.1,0,2.1,0,m.oak);
-    const hinge=new THREE.Group();hinge.position.x=-width/2;hinge.rotation.y=(d.name==='Кабинет'?1:-1)*Math.PI*.4;frame.add(hinge);if(d.name==='Кабинет')frame.userData={...frame.userData,opening:'inward',hingeSide:'original'};
+    const hinge=new THREE.Group();hinge.position.x=-width/2;hinge.rotation.y=(d.name==='Кабинет'||d.name==='Вход'?1:-1)*Math.PI*.4;frame.add(hinge);if(d.name==='Вход')frame.userData={...frame.userData,opening:'outward',hingeSide:'original'};if(d.name==='Кабинет')frame.userData={...frame.userData,opening:'inward',hingeSide:'original'};
     box(hinge,'Дверное полотно',width-.04,2.04,.035,(width-.04)/2,1.03,0,d.external?m.oak:m.white);
     box(hinge,'Ручка',.11,.025,.065,width-.14,1.02,.025,m.metal);
   }

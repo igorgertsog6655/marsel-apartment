@@ -30,7 +30,7 @@ export function addHall({furniture,decor,ceiling,lamps,data,m,b,rounded,framedPa
   cylinder(lamps,'Рассеиватель прихожей',.21,.025,11.65,2.67,-2.90,m.linen);point('Свет прихожей',11.65,2.50,-2.90,5);
   // Low, shielded guidance lights on solid corridor wall sections.
   const guideMat=new THREE.MeshStandardMaterial({name:'Ночная подсветка прохода 2700К',color:'#ffe6bf',emissive:'#ffc47d',emissiveIntensity:1.2});
-  for(const [x,z,turn=0] of [[9.71216+.0175,-.37],[9.71216+.0175,-1.668551],[11.28,-1.979057-.0175,Math.PI/2],[11.69,-3.942086+.0175,-Math.PI/2]]){
+  for(const [x,z,turn=0] of [[9.71216+.0175,-.37],[9.71216+.0175,-1.668551],[11.28,-1.979057-.0175,Math.PI/2]]){
     const fixture=new THREE.Group();fixture.name='Ночной фонарь коридора';fixture.position.set(x,.23,z);fixture.rotation.y=turn;fixture.userData.pathGuide=true;lamps.add(fixture);
     b(fixture,'Бежевый корпус ночника',.035,.10,.16,0,0,0,m.cabinet);
     b(fixture,'Нижний рассеиватель ночника',.025,.018,.12,.013,-.038,0,guideMat);
